@@ -41,7 +41,7 @@ public class JaxbValidationsPlugins extends Plugin {
 	public static final String TARGET_NAMESPACE_PARAMETER_NAME = PLUGIN_OPTION_NAME + ":targetNamespace";
 	public static final String JSR_349 = PLUGIN_OPTION_NAME + ":JSR_349";
 
-	private String namespace = "http://jaxb.dev.java.net/plugin/code-injector";
+	protected String namespace = "http://jaxb.dev.java.net/plugin/code-injector";
 	public String targetNamespace = "TARGET_NAMESPACE";
 	public boolean jsr349 = false;
 
@@ -108,10 +108,6 @@ public class JaxbValidationsPlugins extends Plugin {
 
 	/**
 	 * XS:Element
-	 *
-	 * @param property
-	 * @param clase
-	 * @param model
 	 */
 	public void processElement(CElementPropertyInfo property, ClassOutline clase, Outline model) {
 		FieldOutline field = model.getField(property);
@@ -153,7 +149,7 @@ public class JaxbValidationsPlugins extends Plugin {
 		}
 	}
 
-	private int toInt(Object maxOccurs) {
+	protected int toInt(Object maxOccurs) {
 		if (maxOccurs instanceof BigInteger) {
 			//xjc
 			return ((BigInteger) maxOccurs).intValue();
@@ -167,10 +163,6 @@ public class JaxbValidationsPlugins extends Plugin {
 
 	/**
 	 * XS:Attribute
-	 *
-	 * @param property
-	 * @param clase
-	 * @param model
 	 */
 	public void processAttribute(CAttributePropertyInfo property, ClassOutline clase, Outline model) {
 		FieldOutline field = model.getField(property);
@@ -270,21 +262,21 @@ public class JaxbValidationsPlugins extends Plugin {
 
 	}
 
-	private boolean isValidValue(XSFacet facet) {
+	protected boolean isValidValue(XSFacet facet) {
 		String value = facet.getValue().value;
 		//cxf-codegen puts max and min as value when there is not anything defined in wsdl.
 		return value != null && !isMax(value) && !isMin(value);
 	}
 
-	private boolean isMin(String value) {
+	protected boolean isMin(String value) {
 		return equals(value, -9223372036854775808L) || equals(value, -2147483648L);
 	}
 
-	private boolean isMax(String value) {
+	protected boolean isMax(String value) {
 		return equals(value, 9223372036854775807L) || equals(value, 2147483647L);
 	}
 
-	private boolean equals(String value, long val) {
+	protected boolean equals(String value, long val) {
 		return value.equals(BigInteger.valueOf(val).toString());
 	}
 
@@ -302,7 +294,7 @@ public class JaxbValidationsPlugins extends Plugin {
 	}
 
 
-	private Integer parseInt(String valor) {
+	protected Integer parseInt(String valor) {
 		try {
 
 			Integer i = Integer.parseInt(valor);
@@ -323,7 +315,7 @@ public class JaxbValidationsPlugins extends Plugin {
 	}
 
 	/*
-	 private Long parseLong(String valor) {
+	 protected Long parseLong(String valor) {
 		  try {
 			   Long i = Long.parseLong(valor);
 			   if (i < 2147483647 && i > -2147483648) {
@@ -336,7 +328,7 @@ public class JaxbValidationsPlugins extends Plugin {
 
 	 }    
 	 */
-	private Object getField(String path, Object oo) {
+	protected Object getField(String path, Object oo) {
 		try {
 			if (path.contains(".")) {
 				String field = path.substring(0, path.indexOf("."));
@@ -355,7 +347,7 @@ public class JaxbValidationsPlugins extends Plugin {
 		return null;
 	}
 
-	private static Field getSimpleField(String fieldName, Class<?> clazz) {
+	protected static Field getSimpleField(String fieldName, Class<?> clazz) {
 		Class<?> tmpClass = clazz;
 		try {
 			do {
