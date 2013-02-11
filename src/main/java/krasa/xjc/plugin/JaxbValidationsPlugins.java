@@ -135,17 +135,17 @@ public class JaxbValidationsPlugins extends Plugin {
 			}
 		}
 
-		ElementDecl declaracion = (ElementDecl) getField("term", particle);
-		if (declaracion.getType().getTargetNamespace().startsWith(targetNamespace) && declaracion.getType().isComplexType()) {
+		ElementDecl declaration = (ElementDecl) getField("term", particle);
+		if (declaration.getType().getTargetNamespace().startsWith(targetNamespace) && declaration.getType().isComplexType()) {
 			if (!hasAnnotation(var, Valid.class)) {
 				System.out.println("@Valid: " + property.getName() + " added to class " + clase.implClass.name());
 				var.annotate(Valid.class);
 			}
 		}
-		if (declaracion.getType() instanceof XSSimpleType) {
-			processType((XSSimpleType) declaracion.getType(), var, property.getName(), clase.implClass.name());
-		} else if (declaracion.getType().getBaseType() instanceof XSSimpleType) {
-			processType((XSSimpleType) declaracion.getType().getBaseType(), var, property.getName(), clase.implClass.name());
+		if (declaration.getType() instanceof XSSimpleType) {
+			processType((XSSimpleType) declaration.getType(), var, property.getName(), clase.implClass.name());
+		} else if (declaration.getType().getBaseType() instanceof XSSimpleType) {
+			processType((XSSimpleType) declaration.getType().getBaseType(), var, property.getName(), clase.implClass.name());
 		}
 	}
 
@@ -185,10 +185,10 @@ public class JaxbValidationsPlugins extends Plugin {
 		processType(particle.getDecl().getType(), var, property.getName(), clase.implClass.name());
 	}
 
-	public void processType(XSSimpleType tipo, JFieldVar field, String campo, String clase) {
+	public void processType(XSSimpleType simpleType, JFieldVar field, String campo, String clase) {
 		if (!hasAnnotation(field, Size.class)) {
-			Integer maxLength = tipo.getFacet("maxLength") == null ? null : parseInt(tipo.getFacet("maxLength").getValue().value);
-			Integer minLength = tipo.getFacet("minLength") == null ? null : parseInt(tipo.getFacet("minLength").getValue().value);
+			Integer maxLength = simpleType.getFacet("maxLength") == null ? null : parseInt(simpleType.getFacet("maxLength").getValue().value);
+			Integer minLength = simpleType.getFacet("minLength") == null ? null : parseInt(simpleType.getFacet("minLength").getValue().value);
 			if (maxLength != null && minLength != null) {
 				System.out.println("@Size(" + minLength + "," + maxLength + "): " + campo + " added to class " + clase);
 				field.annotate(Size.class).param("min", minLength).param("max", maxLength);
@@ -201,19 +201,19 @@ public class JaxbValidationsPlugins extends Plugin {
 			}
 		}
 
-		XSFacet maxInclusive = tipo.getFacet("maxInclusive");
+		XSFacet maxInclusive = simpleType.getFacet("maxInclusive");
 		if (maxInclusive != null && isValidValue(maxInclusive) && !hasAnnotation(field, DecimalMax.class)) {
 			System.out.println("@DecimalMax(" + maxInclusive.getValue().value + "): " + campo + " added to class " + clase);
 			field.annotate(DecimalMax.class).param("value", maxInclusive.getValue().value);
 		}
-		XSFacet minInclusive = tipo.getFacet("minInclusive");
+		XSFacet minInclusive = simpleType.getFacet("minInclusive");
 		if (minInclusive != null && isValidValue(minInclusive) && !hasAnnotation(field, DecimalMin.class)) {
 			System.out.println("@DecimalMin(" + minInclusive.getValue().value + "): " + campo + " added to class " + clase);
 			field.annotate(DecimalMin.class).param("value", minInclusive.getValue().value);
 		}
 
 
-		XSFacet maxExclusive = tipo.getFacet("maxExclusive");
+		XSFacet maxExclusive = simpleType.getFacet("maxExclusive");
 		if (maxExclusive != null && isValidValue(maxExclusive) && !hasAnnotation(field, DecimalMax.class)) {
 			System.out.println("@DecimalMax(" + maxExclusive.getValue().value + "): " + campo + " added to class " + clase);
 			JAnnotationUse annotate = field.annotate(DecimalMax.class);
@@ -222,7 +222,7 @@ public class JaxbValidationsPlugins extends Plugin {
 				annotate.param("inclusive", false);
 			}
 		}
-		XSFacet minExclusive = tipo.getFacet("minExclusive");
+		XSFacet minExclusive = simpleType.getFacet("minExclusive");
 		if (minExclusive != null && isValidValue(minExclusive) && !hasAnnotation(field, DecimalMin.class)) {
 			System.out.println("@DecimalMin(" + minExclusive.getValue().value + "): " + campo + " added to class " + clase);
 			JAnnotationUse annotate = field.annotate(DecimalMin.class);
@@ -233,13 +233,13 @@ public class JaxbValidationsPlugins extends Plugin {
 		}
 
 
-		if (tipo.getFacet("totalDigits") != null) {
-			Integer totalDigits = tipo.getFacet("totalDigits") == null ? null : parseInt(tipo.getFacet("totalDigits").getValue().value);
-			int fractionDigits = tipo.getFacet("fractionDigits") == null ? 0 : parseInt(tipo.getFacet("fractionDigits").getValue().value);
+		if (simpleType.getFacet("totalDigits") != null) {
+			Integer totalDigits = simpleType.getFacet("totalDigits") == null ? null : parseInt(simpleType.getFacet("totalDigits").getValue().value);
+			int fractionDigits = simpleType.getFacet("fractionDigits") == null ? 0 : parseInt(simpleType.getFacet("fractionDigits").getValue().value);
 			if (!hasAnnotation(field, Digits.class)) {
 				System.out.println("@Digits(" + totalDigits + "," + fractionDigits + "): " + campo + " added to class " + clase);
 				JAnnotationUse annox = field.annotate(Digits.class).param("integer", (totalDigits - fractionDigits));
-				if (tipo.getFacet("fractionDigits") != null) {
+				if (simpleType.getFacet("fractionDigits") != null) {
 					annox.param("fraction", fractionDigits);
 				}
 			}
@@ -249,17 +249,18 @@ public class JaxbValidationsPlugins extends Plugin {
 		 message="Name can only contain capital letters, numbers and the symbols '-', '_', '/', ' '"
 		 regexp="^[A-Z0-9_\s//-]*" />
 		 */
-		if (tipo.getFacet("pattern") != null) {
-			String pattern = tipo.getFacet("pattern").getValue().value;
-			//cxf-codegen fix
-			if (!"\\c+".equals(pattern)) {
-				System.out.println("@Pattern(" + pattern + "): " + campo + " added to class " + clase);
-				if (!hasAnnotation(field, Pattern.class)) {
-					field.annotate(Pattern.class).param("regexp", pattern);
+		if (simpleType.getFacet("pattern") != null) {
+			String pattern = simpleType.getFacet("pattern").getValue().value;
+			if ("String".equals(field.type().name())) {
+				//cxf-codegen fix
+				if (!"\\c+".equals(pattern)) {
+					System.out.println("@Pattern(" + pattern + "): " + campo + " added to class " + clase);
+					if (!hasAnnotation(field, Pattern.class)) {
+						field.annotate(Pattern.class).param("regexp", pattern);
+					}
 				}
 			}
 		}
-
 	}
 
 	protected boolean isValidValue(XSFacet facet) {

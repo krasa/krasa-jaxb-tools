@@ -91,5 +91,12 @@
 			<scope>test</scope>
 			<version>${maven-jaxb2-plugin.version}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>4.2.0.Final</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>

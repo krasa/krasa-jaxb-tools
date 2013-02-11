@@ -10,6 +10,10 @@ import java.util.List;
 
 public class RunPluginTest extends RunXJC2Mojo {
 
+	protected File getGeneratedDirectory() {
+		return new File(getBaseDir(), "src/test/generated");
+	}
+
 	@Override
 	public File getSchemaDirectory() {
 		return new File(getBaseDir(), "src/test/resources");
