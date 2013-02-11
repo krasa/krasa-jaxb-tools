@@ -185,12 +185,18 @@ public class JaxbValidationsPlugins extends Plugin {
 	}
 
 	public void processType(XSSimpleType tipo, JFieldVar field, String campo, String clase) {
-		if (tipo.getFacet("maxLength") != null || tipo.getFacet("minLength") != null) {
+		if (!hasAnnotation(field, Size.class)) {
 			Integer maxLength = tipo.getFacet("maxLength") == null ? null : parseInt(tipo.getFacet("maxLength").getValue().value);
 			Integer minLength = tipo.getFacet("minLength") == null ? null : parseInt(tipo.getFacet("minLength").getValue().value);
-			if (!hasAnnotation(field, Size.class)) {
+			if (maxLength != null && minLength != null) {
 				System.out.println("@Size(" + minLength + "," + maxLength + "): " + campo + " added to class " + clase);
 				field.annotate(Size.class).param("min", minLength).param("max", maxLength);
+			} else if (minLength != null) {
+				System.out.println("@Size(" + minLength + ", null): " + campo + " added to class " + clase);
+				field.annotate(Size.class).param("min", minLength);
+			} else if (maxLength != null) {
+				System.out.println("@Size(null, " + maxLength + "): " + campo + " added to class " + clase);
+				field.annotate(Size.class).param("max", maxLength);
 			}
 		}
 		  /*
