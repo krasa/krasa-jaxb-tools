@@ -1,37 +1,38 @@
 Contains
 ----------------
- # plugin for replacing primitives -XReplacePrimitives
- # plugin for generation of Bean Validation Annotations (JSR-303) -XJsr303Annotations
+* plugin for replacing primitives -XReplacePrimitives
+* plugin for generation of Bean Validation Annotations (JSR-303) -XJsr303Annotations
 
 ---- 
 
 XReplacePrimitives
 ----------------
 replaces following types of fields, setters and getters:
- * int to Integer
- * long to Long
- * boolean to Boolean
+* int to Integer
+* long to Long
+* boolean to Boolean
 
 
 
 XJsr303Annotations
 ----------------
 Generates:
- * @Valid annotation for objects defined in schema: -XJsr303Annotations:targetNamespace=http://www.foo.com/bar
- * @NotNull annotation for objects that has a MinOccur value >= 1 or for attributes with required use
- * @Size for lists that have minOccurs > 1
- * @Size if there is a maxLength or minLength restriction
- * @DecimalMax for maxInclusive restriction
- * @DecimalMin for minInclusive restriction
- * @Digits if there is a totalDigits or fractionDigits restriction.
- * @Pattern if there is a Pattern restriction
+* @Valid annotation for objects defined in schema: -XJsr303Annotations:targetNamespace=http://www.foo.com/bar
+* @NotNull annotation for objects that has a MinOccur value >= 1 or for attributes with required use
+* @Size for lists that have minOccurs > 1
+* @Size if there is a maxLength or minLength restriction
+* @DecimalMax for maxInclusive restriction
+* @DecimalMin for minInclusive restriction
+* @Digits if there is a totalDigits or fractionDigits restriction.
+* @Pattern if there is a Pattern restriction
 
 
 Please note that minExclusive and maxExclusive restrictions are excluded. 
 
 Usage:
+----------------
 
-`
+```java
 <plugin>
     <groupId>org.apache.cxf</groupId>
     <artifactId>cxf-codegen-plugin</artifactId>
@@ -66,9 +67,9 @@ Usage:
         ...
     </dependencies>
 </plugin>
-`
+```
 
-`
+```java
 <plugin>
     <groupId>org.jvnet.jaxb2.maven2</groupId>
     <artifactId>maven-jaxb2-plugin</artifactId>
@@ -108,10 +109,9 @@ Usage:
         </execution>
     </executions>
 </plugin>
+```
 
-`
-
-`
+```java
 <plugin>
     <groupId>org.apache.cxf</groupId>
     <artifactId>cxf-xjc-plugin</artifactId>
@@ -143,4 +143,4 @@ Usage:
         </execution>
     </executions>
 </plugin>
-`
+```
