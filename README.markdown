@@ -23,6 +23,8 @@ Generates:
 * @Size if there is a maxLength or minLength restriction
 * @DecimalMax for maxInclusive restriction
 * @DecimalMin for minInclusive restriction
+* @DecimalMax for maxExclusive restriction, enable new parameter (inclusive=false) with: -XJsr303Annotations:JSR_349=true
+* @DecimalMin for minExclusive restriction, enable new parameter (inclusive=false) with: -XJsr303Annotations:JSR_349=true
 * @Digits if there is a totalDigits or fractionDigits restriction.
 * @Pattern if there is a Pattern restriction
 
