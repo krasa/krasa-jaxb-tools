@@ -125,6 +125,12 @@ public class JaxbValidationsPlugins extends Plugin {
 				var.annotate(Size.class).param("min", minOccurs).param("max", maxOccurs);
 			}
 		}
+		if (maxOccurs == -1 && minOccurs > 0) { // maxOccurs="unbounded"
+			if (!hasAnnotation(var, Size.class)) {
+				System.out.println("@Size (" + minOccurs + ") " + property.getName() + " added to class " + clase.implClass.name());
+				var.annotate(Size.class).param("min", minOccurs);
+			}
+		}
 
 		ElementDecl declaracion = (ElementDecl) getField("term", particle);
 		if (declaracion.getType().getTargetNamespace().startsWith(targetNamespace) && declaracion.getType().isComplexType()) {

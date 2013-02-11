@@ -23,6 +23,7 @@
 			<xsd:element name="name" type="a:genericString"/>
 			<xsd:element name="stringWithMaxSize" type="a:stringWithMaxLength"/>
 			<xsd:element name="stringWithMinLength" type="a:stringWithMinLength"/>
+			<xsd:element name="someCollection" minOccurs="1" maxOccurs="unbounded"/>
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -38,6 +39,7 @@
 			<xsd:maxLength value="1024"/>
 		</xsd:restriction>
 	</xsd:simpleType>
+
 	<xsd:simpleType name="stringWithMinLength">
 		<xsd:restriction base="xsd:string">
 			<xsd:minLength value="0"/>
