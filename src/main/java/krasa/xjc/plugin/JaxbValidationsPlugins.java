@@ -227,7 +227,7 @@ public class JaxbValidationsPlugins extends Plugin {
 			JAnnotationUse annotate = field.annotate(DecimalMax.class);
 			annotate.param("value", maxExclusive.getValue().value);
 			if (jsr349) {
-				annotate.param("exclusive", true);
+				annotate.param("inclusive", false);
 			}
 		}
 		XSFacet minExclusive = tipo.getFacet("minExclusive");
@@ -236,7 +236,7 @@ public class JaxbValidationsPlugins extends Plugin {
 			JAnnotationUse annotate = field.annotate(DecimalMin.class);
 			annotate.param("value", minExclusive.getValue().value);
 			if (jsr349) {
-				annotate.param("exclusive", true);
+				annotate.param("inclusive", false);
 			}
 		}
 
