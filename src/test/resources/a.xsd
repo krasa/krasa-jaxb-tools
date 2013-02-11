@@ -4,52 +4,83 @@
 		xmlns:a="a"
 		elementFormDefault="qualified">
 
-	<xsd:element name="a" type="a:AType"/>
+	<xsd:element name="main" type="a:Main"/>
 
-	<xsd:complexType name="AType">
+	<xsd:complexType name="Main">
 		<xsd:sequence>
-			<xsd:element name="a" type="a:A1Type"/>
+			<xsd:element name="numbers" type="a:Numbers"/>
+			<xsd:element name="strings" type="a:Strings"/>
 		</xsd:sequence>
 	</xsd:complexType>
 
-	<xsd:complexType name="A1Type">
+	<xsd:complexType name="Numbers">
 		<xsd:sequence>
-			<xsd:element name="a1" type="a:micros"/>
+			<xsd:element name="minInclusive" type="a:minInclusive"/>
+			<xsd:element name="maxInclusive" type="a:maxInclusive"/>
+
+			<xsd:element name="minExclusive" type="a:minExclusive"/>
+			<xsd:element name="maxExclusive" type="a:maxExclusive"/>
+			<xsd:element name="minMaxExclusive" type="a:minMaxExclusive"/>
 		</xsd:sequence>
 	</xsd:complexType>
 
-	<xsd:complexType name="issueHJIII24Animal">
+	<xsd:complexType name="Strings">
 		<xsd:sequence>
-			<xsd:element name="name" type="a:genericString"/>
-			<xsd:element name="stringWithMaxSize" type="a:stringWithMaxLength"/>
-			<xsd:element name="stringWithMinLength" type="a:stringWithMinLength"/>
+			<xsd:element name="genericString" type="a:minMaxLength"/>
+			<xsd:element name="maxLength" type="a:maxLength"/>
+			<xsd:element name="minLength" type="a:minLength"/>
 			<xsd:element name="someCollection" minOccurs="1" maxOccurs="unbounded"/>
 		</xsd:sequence>
 	</xsd:complexType>
 
-	<xsd:simpleType name="genericString">
+	<xsd:simpleType name="minMaxLength">
 		<xsd:restriction base="xsd:string">
 			<xsd:minLength value="0"/>
 			<xsd:maxLength value="1024"/>
 		</xsd:restriction>
 	</xsd:simpleType>
 
-	<xsd:simpleType name="stringWithMaxLength">
+	<xsd:simpleType name="maxLength">
 		<xsd:restriction base="xsd:string">
 			<xsd:maxLength value="1024"/>
 		</xsd:restriction>
 	</xsd:simpleType>
 
-	<xsd:simpleType name="stringWithMinLength">
+	<xsd:simpleType name="minLength">
 		<xsd:restriction base="xsd:string">
 			<xsd:minLength value="0"/>
 		</xsd:restriction>
 	</xsd:simpleType>
 
 
-	<xsd:simpleType name="micros">
+	<xsd:simpleType name="maxInclusive">
 		<xsd:restriction base="xsd:long">
 			<xsd:maxInclusive value="1000"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="minInclusive">
+		<xsd:restriction base="xsd:long">
+			<xsd:minInclusive value="1000"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="maxExclusive">
+		<xsd:restriction base="xsd:long">
+			<xsd:maxExclusive value="1000"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="minExclusive">
+		<xsd:restriction base="xsd:long">
+			<xsd:minExclusive value="0"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="minMaxExclusive">
+		<xsd:restriction base="xsd:long">
+			<xsd:minExclusive value="0"/>
+			<xsd:maxExclusive value="1000"/>
 		</xsd:restriction>
 	</xsd:simpleType>
 

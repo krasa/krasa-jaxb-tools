@@ -29,6 +29,7 @@ public class RunPluginTest extends RunXJC2Mojo {
 		final List<String> args = new ArrayList<String>(super.getArgs());
 		args.add("-XJsr303Annotations");
 		args.add("-XJsr303Annotations:targetNamespace=a");
+//		args.add("-XJsr303Annotations:JSR_349=true");
 		return args;
 	}
 }

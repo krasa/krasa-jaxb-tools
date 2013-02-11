@@ -39,9 +39,11 @@ public class JaxbValidationsPlugins extends Plugin {
 
 	public static final String PLUGIN_OPTION_NAME = "XJsr303Annotations";
 	public static final String TARGET_NAMESPACE_PARAMETER_NAME = PLUGIN_OPTION_NAME + ":targetNamespace";
+	public static final String JSR_349 = PLUGIN_OPTION_NAME + ":JSR_349";
 
 	private String namespace = "http://jaxb.dev.java.net/plugin/code-injector";
 	public String targetNamespace = "TARGET_NAMESPACE";
+	public boolean jsr349 = false;
 
 	public String getOptionName() {
 		return PLUGIN_OPTION_NAME;
@@ -50,12 +52,19 @@ public class JaxbValidationsPlugins extends Plugin {
 	@Override
 	public int parseArgument(Options opt, String[] args, int i) throws BadCommandLineException, IOException {
 		String arg1 = args[i];
-		int i2 = arg1.indexOf(TARGET_NAMESPACE_PARAMETER_NAME);
 		int consumed = 0;
-		if (i2 > 0) {
-			targetNamespace = arg1.substring(i2 + TARGET_NAMESPACE_PARAMETER_NAME.length() + "=".length());
+		int indexOfNamespace = arg1.indexOf(TARGET_NAMESPACE_PARAMETER_NAME);
+		if (indexOfNamespace > 0) {
+			targetNamespace = arg1.substring(indexOfNamespace + TARGET_NAMESPACE_PARAMETER_NAME.length() + "=".length());
 			consumed++;
 		}
+
+		int index = arg1.indexOf(JSR_349);
+		if (index > 0) {
+			jsr349 = Boolean.parseBoolean(arg1.substring(index + JSR_349.length() + "=".length()));
+			consumed++;
+		}
+
 		return consumed;
 	}
 
@@ -96,8 +105,6 @@ public class JaxbValidationsPlugins extends Plugin {
 		}
 	}
 
-
-	static int i = 0;
 
 	/**
 	 * XS:Element
@@ -144,10 +151,6 @@ public class JaxbValidationsPlugins extends Plugin {
 		} else if (declaracion.getType().getBaseType() instanceof XSSimpleType) {
 			processType((XSSimpleType) declaracion.getType().getBaseType(), var, property.getName(), clase.implClass.name());
 		}
-
-		// if(declaracion.getType() instanceof
-		// if(declaracion.getType().ge)
-		// procesaType(declaracion.getType().getBaseType(),var);
 	}
 
 	private int toInt(Object maxOccurs) {
@@ -172,8 +175,8 @@ public class JaxbValidationsPlugins extends Plugin {
 	public void processAttribute(CAttributePropertyInfo property, ClassOutline clase, Outline model) {
 		FieldOutline field = model.getField(property);
 		System.out.println("Attribute " + property.getName() + " added to class " + clase.implClass.name());
-		XSComponent definicion = property.getSchemaComponent();
-		AttributeUseImpl particle = (AttributeUseImpl) definicion;
+		XSComponent definition = property.getSchemaComponent();
+		AttributeUseImpl particle = (AttributeUseImpl) definition;
 		JFieldVar var = clase.implClass.fields().get(getField("privateName", property));
 		if (particle.isRequired()) {
 			if (!hasAnnotation(var, NotNull.class)) {
@@ -205,19 +208,6 @@ public class JaxbValidationsPlugins extends Plugin {
 				field.annotate(Size.class).param("max", maxLength);
 			}
 		}
-		  /*
-		  * <bindings multiple="true" node=
-          * "//xs:complexType/.//xs:element[contains(@type,'IntPercentRestriction')]"
-          * > <annox:annotate> <annox:annotate
-          * annox:class="javax.validation.constraints.Digits" integer="3"
-          * fraction="2" /> <annox:annotate
-          * annox:class="javax.validation.constraints.Min" value="-100" />
-          * value="100" /> </annox:annotate> </bindings>
-          *//*
-			   * <xs:restriction base="xs:decimal"> <xs:fractionDigits value="2"/>
-               * <xs:maxInclusive value="100.00"/> <xs:minInclusive
-               * value="-100.00"/> <xs:totalDigits value="5"/> </xs:restriction>
-               */
 
 		XSFacet maxInclusive = tipo.getFacet("maxInclusive");
 		if (maxInclusive != null && isValidValue(maxInclusive) && !hasAnnotation(field, DecimalMax.class)) {
@@ -229,6 +219,28 @@ public class JaxbValidationsPlugins extends Plugin {
 			System.out.println("@DecimalMin(" + minInclusive.getValue().value + "): " + campo + " added to class " + clase);
 			field.annotate(DecimalMin.class).param("value", minInclusive.getValue().value);
 		}
+
+
+		XSFacet maxExclusive = tipo.getFacet("maxExclusive");
+		if (maxExclusive != null && isValidValue(maxExclusive) && !hasAnnotation(field, DecimalMax.class)) {
+			System.out.println("@DecimalMax(" + maxExclusive.getValue().value + "): " + campo + " added to class " + clase);
+			JAnnotationUse annotate = field.annotate(DecimalMax.class);
+			annotate.param("value", maxExclusive.getValue().value);
+			if (jsr349) {
+				annotate.param("exclusive", true);
+			}
+		}
+		XSFacet minExclusive = tipo.getFacet("minExclusive");
+		if (minExclusive != null && isValidValue(minExclusive) && !hasAnnotation(field, DecimalMin.class)) {
+			System.out.println("@DecimalMin(" + minExclusive.getValue().value + "): " + campo + " added to class " + clase);
+			JAnnotationUse annotate = field.annotate(DecimalMin.class);
+			annotate.param("value", minExclusive.getValue().value);
+			if (jsr349) {
+				annotate.param("exclusive", true);
+			}
+		}
+
+
 		if (tipo.getFacet("totalDigits") != null) {
 			Integer totalDigits = tipo.getFacet("totalDigits") == null ? null : parseInt(tipo.getFacet("totalDigits").getValue().value);
 			int fractionDigits = tipo.getFacet("fractionDigits") == null ? 0 : parseInt(tipo.getFacet("fractionDigits").getValue().value);
@@ -241,8 +253,8 @@ public class JaxbValidationsPlugins extends Plugin {
 			}
 		}
 		/**
-		 *      <annox:annotate annox:class="javax.validation.constraints.Pattern"
-		 message="Name can only contain capital letters, numbers and the simbols '-', '_', '/', ' '"
+		 *<annox:annotate annox:class="javax.validation.constraints.Pattern"
+		 message="Name can only contain capital letters, numbers and the symbols '-', '_', '/', ' '"
 		 regexp="^[A-Z0-9_\s//-]*" />
 		 */
 		if (tipo.getFacet("pattern") != null) {
@@ -328,14 +340,14 @@ public class JaxbValidationsPlugins extends Plugin {
 		try {
 			if (path.contains(".")) {
 				String field = path.substring(0, path.indexOf("."));
-				Field campo = oo.getClass().getDeclaredField(field);
-				campo.setAccessible(true);
-				Object result = campo.get(oo);
+				Field declaredField = oo.getClass().getDeclaredField(field);
+				declaredField.setAccessible(true);
+				Object result = declaredField.get(oo);
 				return getField(path.substring(path.indexOf(".") + 1), result);
 			} else {
-				Field campo = getSimpleField(path, oo.getClass());
-				campo.setAccessible(true);
-				return campo.get(oo);
+				Field simpleField = getSimpleField(path, oo.getClass());
+				simpleField.setAccessible(true);
+				return simpleField.get(oo);
 			}
 		} catch (Exception e) {
 			System.out.println("Field " + path + " not found on " + oo.getClass().getName());
