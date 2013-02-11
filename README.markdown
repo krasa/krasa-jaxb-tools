@@ -1,10 +1,12 @@
-==Contains:==
+Contains
+----------------
  # plugin for replacing primitives -XReplacePrimitives
  # plugin for generation of Bean Validation Annotations (JSR-303) -XJsr303Annotations
 
 ---- 
 
-===XReplacePrimitives===
+XReplacePrimitives
+----------------
 replaces following types of fields, setters and getters:
  * int to Integer
  * long to Long
@@ -12,7 +14,8 @@ replaces following types of fields, setters and getters:
 
 
 
-===XJsr303Annotations===
+XJsr303Annotations
+----------------
 Generates:
  * @Valid annotation for objects defined in schema: -XJsr303Annotations:targetNamespace=http://www.foo.com/bar
  * @NotNull annotation for objects that has a MinOccur value >= 1 or for attributes with required use
@@ -28,7 +31,7 @@ Please note that minExclusive and maxExclusive restrictions are excluded.
 
 Usage:
 
-{{{
+`
 <plugin>
     <groupId>org.apache.cxf</groupId>
     <artifactId>cxf-codegen-plugin</artifactId>
@@ -63,9 +66,9 @@ Usage:
         ...
     </dependencies>
 </plugin>
-}}}
+`
 
-{{{
+`
 <plugin>
     <groupId>org.jvnet.jaxb2.maven2</groupId>
     <artifactId>maven-jaxb2-plugin</artifactId>
@@ -106,9 +109,9 @@ Usage:
     </executions>
 </plugin>
 
-}}}
+`
 
-{{{
+`
 <plugin>
     <groupId>org.apache.cxf</groupId>
     <artifactId>cxf-xjc-plugin</artifactId>
@@ -140,4 +143,4 @@ Usage:
         </execution>
     </executions>
 </plugin>
-}}}
+`
