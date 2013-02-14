@@ -29,8 +29,6 @@ Generates:
 * @Pattern if there is a Pattern restriction
 
 
-Please note that minExclusive and maxExclusive restrictions are excluded. 
-
 Usage:
 ----------------
 
