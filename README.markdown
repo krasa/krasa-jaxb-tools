@@ -5,15 +5,6 @@ Contains:
 
 ---- 
 
-XReplacePrimitives
-----------------
-replaces following types of fields, setters and getters:
-* int to Integer
-* long to Long
-* boolean to Boolean
-
-
-
 XJsr303Annotations
 ----------------
 Generates:
@@ -29,8 +20,21 @@ Generates:
 * @Pattern if there is a Pattern restriction
 
 
+XReplacePrimitives
+----------------
+replaces following types of fields, setters and getters:
+* int to Integer
+* long to Long
+* boolean to Boolean
+
+---- 
+
+
 Usage:
 ----------------
+The plugin is not in public maven repositories, so you have to checkout it, install/deploy to your repository, and maybe change a little for your needs.
+
+
 
 ```java
 <plugin>
