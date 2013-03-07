@@ -1,2 +1,2 @@
-krasa.xjc.plugin.JaxbValidationsPlugins
-krasa.xjc.plugin.PrimitiveFixerPlugin
+com.sun.tools.xjc.addon.krasa.JaxbValidationsPlugins
+com.sun.tools.xjc.addon.krasa.PrimitiveFixerPlugin

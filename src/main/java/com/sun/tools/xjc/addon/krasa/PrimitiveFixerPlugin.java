@@ -1,4 +1,4 @@
-package krasa.xjc.plugin;
+package com.sun.tools.xjc.addon.krasa;
 
 import com.sun.codemodel.JClass;
 import com.sun.codemodel.JCodeModel;
