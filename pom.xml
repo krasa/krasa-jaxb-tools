@@ -4,11 +4,14 @@
 
 	<groupId>com.github.krasa</groupId>
 	<artifactId>krasa-jaxb-tools</artifactId>
-	<version>0.2.0-SNAPSHOT</version>
+	<version>0.3</version>
 	<packaging>jar</packaging>
+
 	<name>krasa-jaxb-tools</name>
+
 	<description>JAXB plugins for generation of Bean Validation Annotations (JSR-303) and replacing primitive types
 	</description>
+
 	<url>https://github.com/krasa/krasa-jaxb-tools/</url>
 
 	<licenses>
@@ -20,8 +23,17 @@
 	</licenses>
 
 	<scm>
-		<url>https://github.com/krasa/krasa-jaxb-tools.git</url>
+		<connection>scm:git:git@github.com:krasa/krasa-jaxb-tools.git</connection>
+		<url>scm:git:git@github.com:krasa/krasa-jaxb-tools.git</url>
+		<developerConnection>scm:git:git@github.com:krasa/krasa-jaxb-tools.git</developerConnection>
 	</scm>
+
+	<developers>
+		<developer>
+			<name>Vojtech Krasa</name>
+			<email>vojta.krasa@gmail.com</email>
+		</developer>
+	</developers>
 
 
 	<properties>
