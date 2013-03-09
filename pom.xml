@@ -9,14 +9,7 @@
 	<name>krasa-jaxb-tools</name>
 	<description>JAXB plugin for generation of Bean Validation Annotations (JSR-303) and replacing primitive types
 	</description>
-	<url>https://code.google.com/p/krasa-jaxb-tools/</url>
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven-jaxb2-plugin.version>0.8.2</maven-jaxb2-plugin.version>
-		<jaxb.version>2.2.6</jaxb.version>
-		<validation-api.version>1.0.0.GA</validation-api.version>
-	</properties>
+	<url>https://github.com/krasa/krasa-jaxb-tools/</url>
 
 	<licenses>
 		<license>
@@ -30,6 +23,13 @@
 		<url>https://github.com/krasa/krasa-jaxb-tools.git</url>
 	</scm>
 
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven-jaxb2-plugin.version>0.8.2</maven-jaxb2-plugin.version>
+		<jaxb.version>2.2.6</jaxb.version>
+		<validation-api.version>1.0.0.GA</validation-api.version>
+	</properties>
 
 	<build>
 		<plugins>
