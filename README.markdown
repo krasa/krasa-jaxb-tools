@@ -73,7 +73,7 @@ Usage:
         <dependency>
             <groupId>com.github.krasa</groupId>
             <artifactId>krasa-jaxb-tools</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>${krasa-jaxb-tools.version}</version>
         </dependency>
         ...
     </dependencies>
@@ -113,7 +113,7 @@ Usage:
                     <plugin>
                         <groupId>com.github.krasa</groupId>
                         <artifactId>krasa-jaxb-tools</artifactId>
-                        <version>0.1.0-SNAPSHOT</version>
+                        <version>${krasa-jaxb-tools.version}</version>
                     </plugin>
                 </plugins>
             </configuration>
@@ -141,7 +141,7 @@ Usage:
             </xsdOption>
         </xsdOptions>
         <extensions>
-            <extension>com.github.krasa:krasa-jaxb-tools:0.1.0-SNAPSHOT</extension>
+            <extension>com.github.krasa:krasa-jaxb-tools:${krasa-jaxb-tools.version}</extension>
         </extensions>
     </configuration>
     <executions>
