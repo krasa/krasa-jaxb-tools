@@ -39,7 +39,11 @@ replaces following types of fields, setters and getters:
 * boolean to Boolean
 
 ---- 
+Example project:
+----------------
+https://github.com/krasa/krasa-jaxb-tools-example
 
+---- 
 Usage:
 ----------------
 
