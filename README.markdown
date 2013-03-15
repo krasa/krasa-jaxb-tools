@@ -1,3 +1,14 @@
+Actual version:
+----------------
+```xml
+<dependency>
+    <groupId>com.github.krasa</groupId>
+    <artifactId>krasa-jaxb-tools</artifactId>
+    <version>0.3</version>
+</dependency>
+```
+
+
 Contains:
 ----------------
 * plugin for replacing primitives **-XReplacePrimitives**
@@ -28,13 +39,13 @@ replaces following types of fields, setters and getters:
 * boolean to Boolean
 
 ---- 
+Example project:
+----------------
+https://github.com/krasa/krasa-jaxb-tools-example
 
-
+---- 
 Usage:
 ----------------
-The plugin is not in public maven repositories, so you have to checkout it, install/deploy to your repository, and maybe change a little for your needs.
-
-
 
 ```java
 <plugin>
@@ -64,9 +75,9 @@ The plugin is not in public maven repositories, so you have to checkout it, inst
     </executions>
     <dependencies>
         <dependency>
-            <groupId>krasa</groupId>
+            <groupId>com.github.krasa</groupId>
             <artifactId>krasa-jaxb-tools</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>${krasa-jaxb-tools.version}</version>
         </dependency>
         ...
     </dependencies>
@@ -104,9 +115,9 @@ The plugin is not in public maven repositories, so you have to checkout it, inst
                 </args>
                 <plugins>
                     <plugin>
-                        <groupId>krasa</groupId>
+                        <groupId>com.github.krasa</groupId>
                         <artifactId>krasa-jaxb-tools</artifactId>
-                        <version>0.1.0-SNAPSHOT</version>
+                        <version>${krasa-jaxb-tools.version}</version>
                     </plugin>
                 </plugins>
             </configuration>
@@ -134,7 +145,7 @@ The plugin is not in public maven repositories, so you have to checkout it, inst
             </xsdOption>
         </xsdOptions>
         <extensions>
-            <extension>krasa:krasa-jaxb-tools:0.1.0-SNAPSHOT</extension>
+            <extension>com.github.krasa:krasa-jaxb-tools:${krasa-jaxb-tools.version}</extension>
         </extensions>
     </configuration>
     <executions>
