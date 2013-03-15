@@ -16,7 +16,8 @@ public class RunPluginTest extends RunXJC2Mojo {
 
 	@Override
 	public File getSchemaDirectory() {
-		return new File(getBaseDir(), "src/test/resources");
+//		return new File(getBaseDir(), "src/test/resources/a");
+		return new File(getBaseDir(), "src/test/resources/b");
 	}
 
 	@Override
@@ -32,7 +33,8 @@ public class RunPluginTest extends RunXJC2Mojo {
 	public List<String> getArgs() {
 		final List<String> args = new ArrayList<String>(super.getArgs());
 		args.add("-XJsr303Annotations");
-		args.add("-XJsr303Annotations:targetNamespace=a");
+		args.add("-XJsr303Annotations:targetNamespace=");
+//		args.add("-XJsr303Annotations:targetNamespace=a");
 //		args.add("-XJsr303Annotations:JSR_349=true");
 		return args;
 	}

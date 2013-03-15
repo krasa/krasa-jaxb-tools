@@ -12,11 +12,13 @@ import com.sun.tools.xjc.outline.ClassOutline;
 import com.sun.tools.xjc.outline.FieldOutline;
 import com.sun.tools.xjc.outline.Outline;
 import com.sun.xml.xsom.XSComponent;
+import com.sun.xml.xsom.XSElementDecl;
 import com.sun.xml.xsom.XSFacet;
 import com.sun.xml.xsom.XSSimpleType;
 import com.sun.xml.xsom.impl.AttributeUseImpl;
 import com.sun.xml.xsom.impl.ElementDecl;
 import com.sun.xml.xsom.impl.ParticleImpl;
+import com.sun.xml.xsom.impl.parser.DelayedRef;
 import org.xml.sax.ErrorHandler;
 
 import javax.validation.Valid;
@@ -135,17 +137,28 @@ public class JaxbValidationsPlugins extends Plugin {
 			}
 		}
 
-		ElementDecl declaration = (ElementDecl) getField("term", particle);
-		if (declaration.getType().getTargetNamespace().startsWith(targetNamespace) && declaration.getType().isComplexType()) {
+		Object term = getField("term", particle);
+		if (term instanceof ElementDecl) {
+			processValidAnnotation(property, clase, var, (ElementDecl) term);
+		} else if (term instanceof DelayedRef.Element) {
+			XSElementDecl xsElementDecl = ((DelayedRef.Element) term).get();
+			processValidAnnotation(property, clase, var, (ElementDecl) xsElementDecl);
+		}
+
+	}
+
+	private void processValidAnnotation(CElementPropertyInfo property, ClassOutline clase, JFieldVar var,
+			ElementDecl element) {
+		if (element.getType().getTargetNamespace().startsWith(targetNamespace) && element.getType().isComplexType()) {
 			if (!hasAnnotation(var, Valid.class)) {
 				System.out.println("@Valid: " + property.getName() + " added to class " + clase.implClass.name());
 				var.annotate(Valid.class);
 			}
 		}
-		if (declaration.getType() instanceof XSSimpleType) {
-			processType((XSSimpleType) declaration.getType(), var, property.getName(), clase.implClass.name());
-		} else if (declaration.getType().getBaseType() instanceof XSSimpleType) {
-			processType((XSSimpleType) declaration.getType().getBaseType(), var, property.getName(), clase.implClass.name());
+		if (element.getType() instanceof XSSimpleType) {
+			processType((XSSimpleType) element.getType(), var, property.getName(), clase.implClass.name());
+		} else if (element.getType().getBaseType() instanceof XSSimpleType) {
+			processType((XSSimpleType) element.getType().getBaseType(), var, property.getName(), clase.implClass.name());
 		}
 	}
 

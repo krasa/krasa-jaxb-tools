@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="Address" type="addressElement"/>
+
+  <xs:element name="Container" type="containerElement"/>
+
+  <xs:element name="EncodeRequest" type="encodeRequest"/>
+
+  <xs:element name="FreeFormAddress" type="freeFormAddressElement"/>
+
+  <xs:element name="Impb" type="impbElement"/>
+
+  <xs:element name="LabelDetail" type="labelDetailElement"/>
+
+  <xs:element name="Mpu" type="mpuElement"/>
+
+  <xs:element name="PackageRef" type="packageRefElement"/>
+
+  <xs:element name="Response" type="mpuResponseElement"/>
+
+  <xs:element name="StandardAddress" type="standardAddressElement"/>
+
+  <xs:element name="Weight" type="weightElement"/>
+
+  <xs:complexType name="encodeRequest">
+    <xs:complexContent>
+      <xs:extension base="abstractRequest">
+        <xs:sequence>
+          <xs:element name="CustomerId" type="xs:int"/>
+          <xs:element name="BatchRef" type="xs:string"/>
+          <xs:element name="HaltOnError" type="xs:boolean"/>
+          <xs:element name="RejectAllOnError" type="xs:boolean"/>
+          <xs:element name="MpuList">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element ref="Mpu" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="abstractRequest">
+    <xs:complexContent>
+      <xs:extension base="abstractElement">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="abstractElement" abstract="true">
+    <xs:sequence/>
+  </xs:complexType>
+
+  <xs:complexType name="mpuElement">
+    <xs:sequence>
+      <xs:element name="PackageId" type="xs:string" minOccurs="0"/>
+      <xs:element ref="PackageRef" minOccurs="0"/>
+      <xs:element name="ConsigneeAddress" type="addressElement"/>
+      <xs:element name="ReturnAddress" type="addressElement" minOccurs="0"/>
+      <xs:element name="OrderedProductCode" type="xs:string"/>
+      <xs:element ref="Weight"/>
+      <xs:element name="Service" type="xs:string" minOccurs="0"/>
+      <xs:element name="BillingRef1" type="xs:string" minOccurs="0"/>
+      <xs:element name="BillingRef2" type="xs:string" minOccurs="0"/>
+      <xs:element name="ThirdPartyBillTo" type="xs:int" minOccurs="0"/>
+      <xs:element name="MailTypeCode" type="xs:string"/>
+      <xs:element name="FacilityCode" type="xs:string" minOccurs="0"/>
+      <xs:element name="ExpectedShipDate" type="xs:string"/>
+      <xs:element ref="Impb" minOccurs="0"/>
+      <xs:element name="ContainerRef1" type="containerElement" minOccurs="0"/>
+      <xs:element name="ContainerRef2" type="containerElement" minOccurs="0"/>
+      <xs:element ref="Response" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="packageRefElement">
+    <xs:sequence>
+      <xs:element name="PrintFlag" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="LabelText" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="addressElement">
+    <xs:sequence>
+      <xs:element ref="FreeFormAddress" minOccurs="0"/>
+      <xs:element ref="StandardAddress" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="freeFormAddressElement">
+    <xs:sequence>
+      <xs:element name="Line1" type="xs:string"/>
+      <xs:element name="Line2" type="xs:string" minOccurs="0"/>
+      <xs:element name="Line3" type="xs:string" minOccurs="0"/>
+      <xs:element name="Line4" type="xs:string" minOccurs="0"/>
+      <xs:element name="Line5" type="xs:string" minOccurs="0"/>
+      <xs:element name="Line6" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="standardAddressElement">
+    <xs:sequence>
+      <xs:element name="Name" type="xs:string" minOccurs="0"/>
+      <xs:element name="Firm" type="xs:string" minOccurs="0"/>
+      <xs:element name="Address1" type="xs:string"/>
+      <xs:element name="Address2" type="xs:string" minOccurs="0"/>
+      <xs:element name="City" type="xs:string"/>
+      <xs:element name="State" type="xs:string"/>
+      <xs:element name="Zip" type="xs:string"/>
+      <xs:element name="CountryCode" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="weightElement">
+    <xs:sequence>
+      <xs:element name="Unit" type="weightUnitValue"/>
+      <xs:element name="Value" type="xs:decimal"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="impbElement">
+    <xs:sequence>
+      <xs:element name="Construct" type="impbConstructValue"/>
+      <xs:element name="Value" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="containerElement">
+    <xs:sequence>
+      <xs:element name="Type" type="containerTypeValue"/>
+      <xs:element name="ContainerId" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="mpuResponseElement">
+    <xs:sequence>
+      <xs:element name="ErrorList" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Error" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element ref="LabelDetail" minOccurs="0"/>
+      <xs:element name="LabelZpl" type="xs:string" minOccurs="0"/>
+      <xs:element name="LabelImage" type="xs:base64Binary" minOccurs="0"/>
+      <xs:element name="MailItemId" type="xs:string" minOccurs="0"/>
+      <xs:element name="DelconFromImpb" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="labelDetailElement">
+    <xs:sequence>
+      <xs:element ref="Impb" minOccurs="0"/>
+      <xs:element name="ServiceTypeCode" type="xs:string" minOccurs="0"/>
+      <xs:element name="CorrectedAddress" type="addressElement" minOccurs="0"/>
+      <xs:element name="MailTypeCode" type="xs:string"/>
+      <xs:element name="ShipperAddress" type="addressElement"/>
+      <xs:element name="InboundSortCode" type="xs:string"/>
+      <xs:element name="IntendedReceivingFacility" type="xs:string"/>
+      <xs:element name="OutboundSortCode" type="xs:string"/>
+      <xs:element name="SortingSetupVersion" type="xs:string"/>
+      <xs:element name="ZipPlus4" type="xs:string" minOccurs="0"/>
+      <xs:element name="ServiceLevel" type="xs:string" minOccurs="0"/>
+      <xs:element name="OrderedProductCode" type="xs:string"/>
+      <xs:element name="MailBanner" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="weightUnitValue">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="GM"/>
+      <xs:enumeration value="LB"/>
+      <xs:enumeration value="KG"/>
+      <xs:enumeration value="OZ"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="impbConstructValue">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="N05"/>
+      <xs:enumeration value="C05"/>
+      <xs:enumeration value="N04"/>
+      <xs:enumeration value="C07"/>
+      <xs:enumeration value="C06"/>
+      <xs:enumeration value="N01"/>
+      <xs:enumeration value="C01"/>
+      <xs:enumeration value="N02"/>
+      <xs:enumeration value="C03"/>
+      <xs:enumeration value="C02"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="containerTypeValue">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="SACK"/>
+      <xs:enumeration value="GAYLORD"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
