@@ -1,4 +1,4 @@
-Actual version:
+Actual Release:
 ----------------
 ```xml
 <dependency>
@@ -7,7 +7,26 @@ Actual version:
     <version>0.3</version>
 </dependency>
 ```
+Snapshot:
+----------------
+```xml
+<dependency>
+    <groupId>com.github.krasa</groupId>
+    <artifactId>krasa-jaxb-tools</artifactId>
+    <version>0.4-SNAPSHOT</version>
+</dependency>
 
+<repository>
+    <id>snapshots-repo</id>
+    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    <releases>
+        <enabled>false</enabled>
+    </releases>
+    <snapshots>
+        <enabled>true</enabled>
+    </snapshots>
+</repository>
+```
 
 Contains:
 ----------------
