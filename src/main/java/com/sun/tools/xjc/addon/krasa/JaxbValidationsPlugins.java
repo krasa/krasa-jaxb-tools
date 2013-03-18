@@ -42,10 +42,12 @@ public class JaxbValidationsPlugins extends Plugin {
 	public static final String PLUGIN_OPTION_NAME = "XJsr303Annotations";
 	public static final String TARGET_NAMESPACE_PARAMETER_NAME = PLUGIN_OPTION_NAME + ":targetNamespace";
 	public static final String JSR_349 = PLUGIN_OPTION_NAME + ":JSR_349";
+	public static final String GENERATE_NOT_NULL_ANNOTATIONS = PLUGIN_OPTION_NAME + ":generateNotNullAnnotations";
 
 	protected String namespace = "http://jaxb.dev.java.net/plugin/code-injector";
 	public String targetNamespace = "TARGET_NAMESPACE";
 	public boolean jsr349 = false;
+	public boolean NotNullAnnotations = false;
 
 	public String getOptionName() {
 		return PLUGIN_OPTION_NAME;
@@ -64,6 +66,12 @@ public class JaxbValidationsPlugins extends Plugin {
 		int index = arg1.indexOf(JSR_349);
 		if (index > 0) {
 			jsr349 = Boolean.parseBoolean(arg1.substring(index + JSR_349.length() + "=".length()));
+			consumed++;
+		}
+		
+		int index_generateNotNullAnnotations = arg1.indexOf(GENERATE_NOT_NULL_ANNOTATIONS);
+		if (index_generateNotNullAnnotations > 0) {
+			NotNullAnnotations = Boolean.parseBoolean(arg1.substring(index_generateNotNullAnnotations + GENERATE_NOT_NULL_ANNOTATIONS.length() + "=".length()));
 			consumed++;
 		}
 
@@ -120,8 +128,10 @@ public class JaxbValidationsPlugins extends Plugin {
 		JFieldVar var = clase.implClass.fields().get(getField("privateName", property));
 		if (minOccurs < 0 || minOccurs >= 1) {
 			if (!hasAnnotation(var, NotNull.class)) {
-				System.out.println("@NotNull: " + property.getName() + " added to class " + clase.implClass.name());
-				var.annotate(NotNull.class);
+				if (NotNullAnnotations) {
+					System.out.println("@NotNull: " + property.getName() + " added to class " + clase.implClass.name());
+					var.annotate(NotNull.class);
+				}
 			}
 		}
 		if (maxOccurs > 1) {
@@ -185,8 +195,10 @@ public class JaxbValidationsPlugins extends Plugin {
 		JFieldVar var = clase.implClass.fields().get(getField("privateName", property));
 		if (particle.isRequired()) {
 			if (!hasAnnotation(var, NotNull.class)) {
-				System.out.println("@NotNull: " + property.getName() + " added to class " + clase.implClass.name());
-				var.annotate(NotNull.class);
+				if (NotNullAnnotations) {
+					System.out.println("@NotNull: " + property.getName() + " added to class " + clase.implClass.name());
+					var.annotate(NotNull.class);
+				}
 			}
 		}
 		if (particle.getDecl().getType().getTargetNamespace().startsWith(targetNamespace) && particle.getDecl().getType().isComplexType()) {
