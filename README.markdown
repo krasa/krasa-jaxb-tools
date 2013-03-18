@@ -65,6 +65,16 @@ https://github.com/krasa/krasa-jaxb-tools-example
 ---- 
 Usage:
 ----------------
+<!--mandatory-->
+-XJsr303Annotations
+
+<!--optional, see @Valid -->
+-XJsr303Annotations:targetNamespace=http://www.foo.com/bar
+
+<!--optional, these are the default values-->
+-XJsr303Annotations:generateNotNullAnnotations=true
+-XJsr303Annotations:JSR_349=false
+                            
 
 ```java
 <plugin>
@@ -83,6 +93,9 @@ Usage:
                             ...
                             <extraarg>-xjc-XJsr303Annotations</extraarg>
                             <extraarg>-xjc-XJsr303Annotations:targetNamespace=http://www.foo.com/bar</extraarg>
+                         	<!--optional, this is default values-->
+                            <extraarg>-xjc-XJsr303Annotations:generateNotNullAnnotations=true</extraarg>
+                            <extraarg>-xjc-XJsr303Annotations:JSR_349=false</extraarg>
                         </extraargs>
                     </wsdlOption>
                 </wsdlOptions>
@@ -144,6 +157,14 @@ Usage:
     </executions>
 </plugin>
 ```
+
+<!--optional, see @Valid -->
+<extraarg>-XJsr303Annotations:targetNamespace=http://www.foo.com/bar</extraarg>
+
+<!--optional, these are the default values-->
+<extraarg>-XJsr303Annotations:generateNotNullAnnotations=true</extraarg>
+<extraarg>-XJsr303Annotations:JSR_349=false</extraarg>
+                            
 
 ```java
 <plugin>

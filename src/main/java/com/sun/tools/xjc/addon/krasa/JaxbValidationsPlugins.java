@@ -1,5 +1,21 @@
 package com.sun.tools.xjc.addon.krasa;
 
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.math.BigInteger;
+import java.util.Collections;
+import java.util.List;
+
+import javax.validation.Valid;
+import javax.validation.constraints.DecimalMax;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+
+import org.xml.sax.ErrorHandler;
+
 import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JFieldVar;
 import com.sun.tools.xjc.BadCommandLineException;
@@ -19,20 +35,6 @@ import com.sun.xml.xsom.impl.AttributeUseImpl;
 import com.sun.xml.xsom.impl.ElementDecl;
 import com.sun.xml.xsom.impl.ParticleImpl;
 import com.sun.xml.xsom.impl.parser.DelayedRef;
-import org.xml.sax.ErrorHandler;
-
-import javax.validation.Valid;
-import javax.validation.constraints.DecimalMax;
-import javax.validation.constraints.DecimalMin;
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.math.BigInteger;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * big thanks to original author: cocorossello
@@ -47,7 +49,7 @@ public class JaxbValidationsPlugins extends Plugin {
 	protected String namespace = "http://jaxb.dev.java.net/plugin/code-injector";
 	public String targetNamespace = "TARGET_NAMESPACE";
 	public boolean jsr349 = false;
-	public boolean NotNullAnnotations = false;
+	public boolean notNullAnnotations = true;
 
 	public String getOptionName() {
 		return PLUGIN_OPTION_NAME;
@@ -68,10 +70,11 @@ public class JaxbValidationsPlugins extends Plugin {
 			jsr349 = Boolean.parseBoolean(arg1.substring(index + JSR_349.length() + "=".length()));
 			consumed++;
 		}
-		
+
 		int index_generateNotNullAnnotations = arg1.indexOf(GENERATE_NOT_NULL_ANNOTATIONS);
 		if (index_generateNotNullAnnotations > 0) {
-			NotNullAnnotations = Boolean.parseBoolean(arg1.substring(index_generateNotNullAnnotations + GENERATE_NOT_NULL_ANNOTATIONS.length() + "=".length()));
+			notNullAnnotations = Boolean.parseBoolean(arg1.substring(index_generateNotNullAnnotations
+					+ GENERATE_NOT_NULL_ANNOTATIONS.length() + "=".length()));
 			consumed++;
 		}
 
@@ -115,7 +118,6 @@ public class JaxbValidationsPlugins extends Plugin {
 		}
 	}
 
-
 	/**
 	 * XS:Element
 	 */
@@ -128,7 +130,7 @@ public class JaxbValidationsPlugins extends Plugin {
 		JFieldVar var = clase.implClass.fields().get(getField("privateName", property));
 		if (minOccurs < 0 || minOccurs >= 1) {
 			if (!hasAnnotation(var, NotNull.class)) {
-				if (NotNullAnnotations) {
+				if (notNullAnnotations) {
 					System.out.println("@NotNull: " + property.getName() + " added to class " + clase.implClass.name());
 					var.annotate(NotNull.class);
 				}
@@ -136,13 +138,15 @@ public class JaxbValidationsPlugins extends Plugin {
 		}
 		if (maxOccurs > 1) {
 			if (!hasAnnotation(var, Size.class)) {
-				System.out.println("@Size (" + minOccurs + "," + maxOccurs + ") " + property.getName() + " added to class " + clase.implClass.name());
+				System.out.println("@Size (" + minOccurs + "," + maxOccurs + ") " + property.getName()
+						+ " added to class " + clase.implClass.name());
 				var.annotate(Size.class).param("min", minOccurs).param("max", maxOccurs);
 			}
 		}
 		if (maxOccurs == -1 && minOccurs > 0) { // maxOccurs="unbounded"
 			if (!hasAnnotation(var, Size.class)) {
-				System.out.println("@Size (" + minOccurs + ") " + property.getName() + " added to class " + clase.implClass.name());
+				System.out.println("@Size (" + minOccurs + ") " + property.getName() + " added to class "
+						+ clase.implClass.name());
 				var.annotate(Size.class).param("min", minOccurs);
 			}
 		}
@@ -174,10 +178,10 @@ public class JaxbValidationsPlugins extends Plugin {
 
 	protected int toInt(Object maxOccurs) {
 		if (maxOccurs instanceof BigInteger) {
-			//xjc
+			// xjc
 			return ((BigInteger) maxOccurs).intValue();
 		} else if (maxOccurs instanceof Integer) {
-			//cxf-codegen
+			// cxf-codegen
 			return (Integer) maxOccurs;
 		} else {
 			throw new IllegalArgumentException("unknown type " + maxOccurs.getClass());
@@ -195,13 +199,14 @@ public class JaxbValidationsPlugins extends Plugin {
 		JFieldVar var = clase.implClass.fields().get(getField("privateName", property));
 		if (particle.isRequired()) {
 			if (!hasAnnotation(var, NotNull.class)) {
-				if (NotNullAnnotations) {
+				if (notNullAnnotations) {
 					System.out.println("@NotNull: " + property.getName() + " added to class " + clase.implClass.name());
 					var.annotate(NotNull.class);
 				}
 			}
 		}
-		if (particle.getDecl().getType().getTargetNamespace().startsWith(targetNamespace) && particle.getDecl().getType().isComplexType()) {
+		if (particle.getDecl().getType().getTargetNamespace().startsWith(targetNamespace)
+				&& particle.getDecl().getType().isComplexType()) {
 			if (!hasAnnotation(var, Valid.class)) {
 				System.out.println("@Valid: " + property.getName() + " added to class " + clase.implClass.name());
 				var.annotate(Valid.class);
@@ -212,8 +217,10 @@ public class JaxbValidationsPlugins extends Plugin {
 
 	public void processType(XSSimpleType simpleType, JFieldVar field, String campo, String clase) {
 		if (!hasAnnotation(field, Size.class)) {
-			Integer maxLength = simpleType.getFacet("maxLength") == null ? null : parseInt(simpleType.getFacet("maxLength").getValue().value);
-			Integer minLength = simpleType.getFacet("minLength") == null ? null : parseInt(simpleType.getFacet("minLength").getValue().value);
+			Integer maxLength = simpleType.getFacet("maxLength") == null ? null : parseInt(simpleType.getFacet(
+					"maxLength").getValue().value);
+			Integer minLength = simpleType.getFacet("minLength") == null ? null : parseInt(simpleType.getFacet(
+					"minLength").getValue().value);
 			if (maxLength != null && minLength != null) {
 				System.out.println("@Size(" + minLength + "," + maxLength + "): " + campo + " added to class " + clase);
 				field.annotate(Size.class).param("min", minLength).param("max", maxLength);
@@ -228,19 +235,21 @@ public class JaxbValidationsPlugins extends Plugin {
 
 		XSFacet maxInclusive = simpleType.getFacet("maxInclusive");
 		if (maxInclusive != null && isValidValue(maxInclusive) && !hasAnnotation(field, DecimalMax.class)) {
-			System.out.println("@DecimalMax(" + maxInclusive.getValue().value + "): " + campo + " added to class " + clase);
+			System.out.println("@DecimalMax(" + maxInclusive.getValue().value + "): " + campo + " added to class "
+					+ clase);
 			field.annotate(DecimalMax.class).param("value", maxInclusive.getValue().value);
 		}
 		XSFacet minInclusive = simpleType.getFacet("minInclusive");
 		if (minInclusive != null && isValidValue(minInclusive) && !hasAnnotation(field, DecimalMin.class)) {
-			System.out.println("@DecimalMin(" + minInclusive.getValue().value + "): " + campo + " added to class " + clase);
+			System.out.println("@DecimalMin(" + minInclusive.getValue().value + "): " + campo + " added to class "
+					+ clase);
 			field.annotate(DecimalMin.class).param("value", minInclusive.getValue().value);
 		}
 
-
 		XSFacet maxExclusive = simpleType.getFacet("maxExclusive");
 		if (maxExclusive != null && isValidValue(maxExclusive) && !hasAnnotation(field, DecimalMax.class)) {
-			System.out.println("@DecimalMax(" + maxExclusive.getValue().value + "): " + campo + " added to class " + clase);
+			System.out.println("@DecimalMax(" + maxExclusive.getValue().value + "): " + campo + " added to class "
+					+ clase);
 			JAnnotationUse annotate = field.annotate(DecimalMax.class);
 			annotate.param("value", maxExclusive.getValue().value);
 			if (jsr349) {
@@ -249,7 +258,8 @@ public class JaxbValidationsPlugins extends Plugin {
 		}
 		XSFacet minExclusive = simpleType.getFacet("minExclusive");
 		if (minExclusive != null && isValidValue(minExclusive) && !hasAnnotation(field, DecimalMin.class)) {
-			System.out.println("@DecimalMin(" + minExclusive.getValue().value + "): " + campo + " added to class " + clase);
+			System.out.println("@DecimalMin(" + minExclusive.getValue().value + "): " + campo + " added to class "
+					+ clase);
 			JAnnotationUse annotate = field.annotate(DecimalMin.class);
 			annotate.param("value", minExclusive.getValue().value);
 			if (jsr349) {
@@ -257,12 +267,14 @@ public class JaxbValidationsPlugins extends Plugin {
 			}
 		}
 
-
 		if (simpleType.getFacet("totalDigits") != null) {
-			Integer totalDigits = simpleType.getFacet("totalDigits") == null ? null : parseInt(simpleType.getFacet("totalDigits").getValue().value);
-			int fractionDigits = simpleType.getFacet("fractionDigits") == null ? 0 : parseInt(simpleType.getFacet("fractionDigits").getValue().value);
+			Integer totalDigits = simpleType.getFacet("totalDigits") == null ? null : parseInt(simpleType.getFacet(
+					"totalDigits").getValue().value);
+			int fractionDigits = simpleType.getFacet("fractionDigits") == null ? 0 : parseInt(simpleType.getFacet(
+					"fractionDigits").getValue().value);
 			if (!hasAnnotation(field, Digits.class)) {
-				System.out.println("@Digits(" + totalDigits + "," + fractionDigits + "): " + campo + " added to class " + clase);
+				System.out.println("@Digits(" + totalDigits + "," + fractionDigits + "): " + campo + " added to class "
+						+ clase);
 				JAnnotationUse annox = field.annotate(Digits.class).param("integer", (totalDigits - fractionDigits));
 				if (simpleType.getFacet("fractionDigits") != null) {
 					annox.param("fraction", fractionDigits);
@@ -270,14 +282,14 @@ public class JaxbValidationsPlugins extends Plugin {
 			}
 		}
 		/**
-		 *<annox:annotate annox:class="javax.validation.constraints.Pattern"
-		 message="Name can only contain capital letters, numbers and the symbols '-', '_', '/', ' '"
-		 regexp="^[A-Z0-9_\s//-]*" />
+		 * <annox:annotate annox:class="javax.validation.constraints.Pattern"
+		 * message="Name can only contain capital letters, numbers and the symbols '-', '_', '/', ' '"
+		 * regexp="^[A-Z0-9_\s//-]*" />
 		 */
 		if (simpleType.getFacet("pattern") != null) {
 			String pattern = simpleType.getFacet("pattern").getValue().value;
 			if ("String".equals(field.type().name())) {
-				//cxf-codegen fix
+				// cxf-codegen fix
 				if (!"\\c+".equals(pattern)) {
 					System.out.println("@Pattern(" + pattern + "): " + campo + " added to class " + clase);
 					if (!hasAnnotation(field, Pattern.class)) {
@@ -290,7 +302,7 @@ public class JaxbValidationsPlugins extends Plugin {
 
 	protected boolean isValidValue(XSFacet facet) {
 		String value = facet.getValue().value;
-		//cxf-codegen puts max and min as value when there is not anything defined in wsdl.
+		// cxf-codegen puts max and min as value when there is not anything defined in wsdl.
 		return value != null && !isMax(value) && !isMin(value);
 	}
 
@@ -306,7 +318,7 @@ public class JaxbValidationsPlugins extends Plugin {
 		return value.equals(BigInteger.valueOf(val).toString());
 	}
 
-	@SuppressWarnings({"unchecked", "rawtypes"})
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public boolean hasAnnotation(JFieldVar var, Class anotacion) {
 		List<JAnnotationUse> lista = (List<JAnnotationUse>) getField("annotations", var);
 		if (lista != null) {
@@ -318,7 +330,6 @@ public class JaxbValidationsPlugins extends Plugin {
 		}
 		return false;
 	}
-
 
 	protected Integer parseInt(String valor) {
 		try {
@@ -341,18 +352,10 @@ public class JaxbValidationsPlugins extends Plugin {
 	}
 
 	/*
-	 protected Long parseLong(String valor) {
-		  try {
-			   Long i = Long.parseLong(valor);
-			   if (i < 2147483647 && i > -2147483648) {
-					return i;
-			   }
-		  } catch (Exception e) {
-			   return Math.round(Double.parseDouble(valor));
-		  }
-		  return null;
-
-	 }    
+	 * protected Long parseLong(String valor) { try { Long i = Long.parseLong(valor); if (i < 2147483647 && i >
+	 * -2147483648) { return i; } } catch (Exception e) { return Math.round(Double.parseDouble(valor)); } return null;
+	 * 
+	 * }
 	 */
 	protected Object getField(String path, Object oo) {
 		try {
