@@ -35,6 +35,12 @@
 		</xsd:sequence>
 	</xsd:complexType>
 
+	<xsd:complexType name="Dates">
+		<xsd:sequence>
+			<xsd:element name="date1" type="a:date1"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
 	<xsd:simpleType name="pattern">
 		<xsd:restriction base="xsd:string">
 			<xsd:pattern value="[0-9]"/>
@@ -94,6 +100,13 @@
 		<xsd:restriction base="xsd:long">
 			<xsd:minExclusive value="0"/>
 			<xsd:maxExclusive value="1000"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="date1">
+		<xsd:restriction base="xsd:gYearMonth">
+			<xsd:minInclusive value="1911-01"/>
+			<xsd:pattern value="\d{4}-\d{2}"/>
 		</xsd:restriction>
 	</xsd:simpleType>
 

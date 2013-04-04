@@ -51,6 +51,9 @@ public class JaxbValidationsPlugins extends Plugin {
 	public boolean jsr349 = false;
 	public boolean notNullAnnotations = true;
 
+	public static final String[] DECIMAL = new String[] { "BigDecimal", "BigInteger", "String", "byte", "short", "int",
+			"long" };
+
 	public String getOptionName() {
 		return PLUGIN_OPTION_NAME;
 	}
@@ -234,20 +237,23 @@ public class JaxbValidationsPlugins extends Plugin {
 		}
 
 		XSFacet maxInclusive = simpleType.getFacet("maxInclusive");
-		if (maxInclusive != null && isValidValue(maxInclusive) && !hasAnnotation(field, DecimalMax.class)) {
+		if (maxInclusive != null && isNumber(field) && isValidValue(maxInclusive)
+				&& !hasAnnotation(field, DecimalMax.class)) {
 			System.out.println("@DecimalMax(" + maxInclusive.getValue().value + "): " + campo + " added to class "
 					+ clase);
 			field.annotate(DecimalMax.class).param("value", maxInclusive.getValue().value);
 		}
 		XSFacet minInclusive = simpleType.getFacet("minInclusive");
-		if (minInclusive != null && isValidValue(minInclusive) && !hasAnnotation(field, DecimalMin.class)) {
+		if (minInclusive != null && isNumber(field) && isValidValue(minInclusive)
+				&& !hasAnnotation(field, DecimalMin.class)) {
 			System.out.println("@DecimalMin(" + minInclusive.getValue().value + "): " + campo + " added to class "
 					+ clase);
 			field.annotate(DecimalMin.class).param("value", minInclusive.getValue().value);
 		}
 
 		XSFacet maxExclusive = simpleType.getFacet("maxExclusive");
-		if (maxExclusive != null && isValidValue(maxExclusive) && !hasAnnotation(field, DecimalMax.class)) {
+		if (maxExclusive != null && isNumber(field) && isValidValue(maxExclusive)
+				&& !hasAnnotation(field, DecimalMax.class)) {
 			System.out.println("@DecimalMax(" + maxExclusive.getValue().value + "): " + campo + " added to class "
 					+ clase);
 			JAnnotationUse annotate = field.annotate(DecimalMax.class);
@@ -257,7 +263,8 @@ public class JaxbValidationsPlugins extends Plugin {
 			}
 		}
 		XSFacet minExclusive = simpleType.getFacet("minExclusive");
-		if (minExclusive != null && isValidValue(minExclusive) && !hasAnnotation(field, DecimalMin.class)) {
+		if (minExclusive != null && isNumber(field) && isValidValue(minExclusive)
+				&& !hasAnnotation(field, DecimalMin.class)) {
 			System.out.println("@DecimalMin(" + minExclusive.getValue().value + "): " + campo + " added to class "
 					+ clase);
 			JAnnotationUse annotate = field.annotate(DecimalMin.class);
@@ -298,6 +305,25 @@ public class JaxbValidationsPlugins extends Plugin {
 				}
 			}
 		}
+	}
+
+	private boolean isNumber(JFieldVar field) {
+		for (String type : DECIMAL) {
+			if (type.equalsIgnoreCase(field.type().name())) {
+				return true;
+			}
+		}
+		try {
+			Class aClass = Class.forName(field.type().fullName());
+			while (aClass.getSuperclass() != Object.class) {
+				if (aClass.getSuperclass() == Number.class) {
+					return true;
+				}
+			}
+		} catch (Exception e) {
+			// whatever
+		}
+		return false;
 	}
 
 	protected boolean isValidValue(XSFacet facet) {
