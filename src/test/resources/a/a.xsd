@@ -11,6 +11,7 @@
 			<xsd:element name="numbers" type="a:Numbers"/>
 			<xsd:element name="strings" type="a:Strings"/>
 			<xsd:element name="unsignedByte" type="a:unsignedByte"/>
+			<xsd:element name="choices" type="a:Choices"/>
 		</xsd:sequence>
 	</xsd:complexType>
 
@@ -110,4 +111,12 @@
 		</xsd:restriction>
 	</xsd:simpleType>
 
+	<xsd:complexType name="Choices">
+		<xsd:sequence>
+			<xsd:choice>
+				<xsd:element name="Tea" type="xsd:string"/>
+				<xsd:element name="Coffee" type="xsd:string"/>
+			</xsd:choice>
+		</xsd:sequence>
+	</xsd:complexType>
 </xsd:schema>
