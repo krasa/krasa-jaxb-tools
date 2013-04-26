@@ -1,6 +1,6 @@
 package com.sun.tools.xjc.addon.krasa;
 
-import static com.sun.tools.xjc.addon.krasa.Utils.*;
+import static com.sun.tools.xjc.addon.krasa.Utils.toInt;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -126,13 +126,14 @@ public class JaxbValidationsPlugins extends Plugin {
 	public void processElement(CElementPropertyInfo property, ClassOutline classOutline, Outline model) {
 		XSComponent schemaComponent = property.getSchemaComponent();
 		ParticleImpl particle = (ParticleImpl) schemaComponent;
-
 		// must be reflection because of cxf-codegen
 		int maxOccurs = toInt(Utils.getField("maxOccurs", particle));
 		int minOccurs = toInt(Utils.getField("minOccurs", particle));
 		JFieldVar field = classOutline.implClass.fields().get(propertyName(property));
 
-		if (minOccurs < 0 || minOccurs >= 1) {
+		// workaround for choices
+		boolean required = property.isRequired();
+		if (minOccurs < 0 || minOccurs >= 1 && required) {
 			if (!hasAnnotation(field, NotNull.class)) {
 				if (notNullAnnotations) {
 					System.out.println("@NotNull: " + propertyName(property) + " added to class "
