@@ -10,7 +10,7 @@
 
 	<groupId>com.github.krasa</groupId>
 	<artifactId>krasa-jaxb-tools</artifactId>
-	<version>0.5-SNAPSHOT</version>
+	<version>0.5</version>
 	<packaging>jar</packaging>
 
 	<name>krasa-jaxb-tools</name>
