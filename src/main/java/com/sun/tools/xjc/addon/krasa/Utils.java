@@ -4,13 +4,14 @@ import java.lang.reflect.Field;
 import java.math.BigInteger;
 
 import com.sun.codemodel.JFieldVar;
+import com.sun.codemodel.JType;
 
 /**
  * @author Vojtech Krasa
  */
 public class Utils {
-	public static final String[] NUMBERS = new String[] { "BigDecimal", "BigInteger", "String", "byte", "short", "int",
-			"long" };
+	public static final String[] NUMBERS = new String[]{"BigDecimal", "BigInteger", "String", "byte", "short", "int",
+			"long"};
 
 	public static int toInt(Object maxOccurs) {
 		if (maxOccurs instanceof BigInteger) {

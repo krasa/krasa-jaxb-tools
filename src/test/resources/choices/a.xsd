@@ -1,0 +1,16 @@
+<xsd:schema
+		xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+		targetNamespace="a"
+		xmlns:a="a"
+		elementFormDefault="qualified">
+	<xsd:element name="main" type="a:Choices"/>
+
+	<xsd:complexType name="Choices">
+		<xsd:sequence>
+			<xsd:choice>
+				<xsd:element name="Tea" type="xsd:string"/>
+				<xsd:element name="Coffee" type="xsd:string"/>
+			</xsd:choice>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

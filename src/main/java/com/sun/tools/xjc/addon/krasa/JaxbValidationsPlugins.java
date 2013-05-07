@@ -14,6 +14,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
+import com.sun.tools.xjc.model.CValuePropertyInfo;
+import com.sun.xml.xsom.impl.RestrictionSimpleTypeImpl;
 import org.xml.sax.ErrorHandler;
 
 import com.sun.codemodel.JAnnotationUse;
@@ -109,6 +111,8 @@ public class JaxbValidationsPlugins extends Plugin {
 						processElement((CElementPropertyInfo) property, co, model);
 					} else if (property instanceof CAttributePropertyInfo) {
 						processAttribute((CAttributePropertyInfo) property, co, model);
+					} else if (property instanceof CValuePropertyInfo) {
+						processAttribute((CValuePropertyInfo) property, co, model);
 					}
 				}
 			}
@@ -119,6 +123,7 @@ public class JaxbValidationsPlugins extends Plugin {
 			return false;
 		}
 	}
+
 
 	/**
 	 * XS:Element
@@ -182,7 +187,7 @@ public class JaxbValidationsPlugins extends Plugin {
 	}
 
 	private void validAnnotation(final XSType elementType, JFieldVar var, final String propertyName,
-			final String className) {
+								 final String className) {
 		if (elementType.getTargetNamespace().startsWith(targetNamespace) && elementType.isComplexType()) {
 			if (!hasAnnotation(var, Valid.class)) {
 				System.out.println("@Valid: " + propertyName + " added to class " + className);
@@ -192,7 +197,7 @@ public class JaxbValidationsPlugins extends Plugin {
 	}
 
 	public void processType(XSSimpleType simpleType, JFieldVar field, String propertyName, String className) {
-		if (!hasAnnotation(field, Size.class)) {
+		if (!hasAnnotation(field, Size.class) && field.type().name().equals("String")) {
 			Integer maxLength = simpleType.getFacet("maxLength") == null ? null : Utils.parseInt(simpleType.getFacet(
 					"maxLength").getValue().value);
 			Integer minLength = simpleType.getFacet("minLength") == null ? null : Utils.parseInt(simpleType.getFacet(
@@ -281,9 +286,33 @@ public class JaxbValidationsPlugins extends Plugin {
 		}
 	}
 
+	/*attribute from parent declaration*/
+	private void processAttribute(CValuePropertyInfo property, ClassOutline clase, Outline model) {
+		FieldOutline field = model.getField(property);
+		String propertyName = property.getName(false);
+		String className = clase.implClass.name();
+
+		System.out.println("Attribute " + propertyName + " added to class " + className);
+		XSComponent definition = property.getSchemaComponent();
+		RestrictionSimpleTypeImpl particle = (RestrictionSimpleTypeImpl) definition;
+		XSSimpleType type = particle.asSimpleType();
+		JFieldVar var = clase.implClass.fields().get(propertyName);
+
+
+//		if (particle.isRequired()) {
+//			if (!hasAnnotation(var, NotNull.class)) {
+//				if (notNullAnnotations) {
+//					System.out.println("@NotNull: " + propertyName + " added to class " + className);
+//					var.annotate(NotNull.class);
+//				}
+//			}
+//		}
+
+		validAnnotation(type, var, propertyName, className);
+		processType(type, var, propertyName, className);
+	}
+
 	/**
-	 * Iam not sure if it is even called
-	 * 
 	 * XS:Attribute
 	 */
 	public void processAttribute(CAttributePropertyInfo property, ClassOutline clase, Outline model) {
@@ -316,7 +345,7 @@ public class JaxbValidationsPlugins extends Plugin {
 		return value != null && !Utils.isMax(value) && !Utils.isMin(value);
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	public boolean hasAnnotation(JFieldVar var, Class annotationClass) {
 		List<JAnnotationUse> list = (List<JAnnotationUse>) Utils.getField("annotations", var);
 		if (list != null) {

@@ -23,8 +23,26 @@
 			<xsd:element name="minExclusive" type="a:minExclusive"/>
 			<xsd:element name="maxExclusive" type="a:maxExclusive"/>
 			<xsd:element name="minMaxExclusive" type="a:minMaxExclusive"/>
+			<xsd:element maxOccurs="1" minOccurs="0" name="NumberWithCode" type="a:NumberWithCode"/>
 		</xsd:sequence>
 	</xsd:complexType>
+
+
+	<xsd:simpleType name="Number">
+		<xsd:restriction base="xsd:string">
+			<xsd:minLength value="1"/>
+			<xsd:maxLength value="5"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:complexType name="NumberWithCode">
+		<xsd:simpleContent>
+			<xsd:extension base="a:Number">
+				<xsd:attribute name="code" type="xsd:string" use="optional"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+
 
 	<xsd:complexType name="Strings">
 		<xsd:sequence>
