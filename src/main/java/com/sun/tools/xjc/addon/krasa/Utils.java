@@ -111,12 +111,6 @@ public class Utils {
 	}
 
 	protected static boolean isNumber(Class<?> aClass) {
-		while (aClass.getSuperclass() != Object.class) {
-			if (aClass.getSuperclass() == Number.class) {
-				return true;
-			}
-			aClass = aClass.getSuperclass();
-		}
-		return false;
+		return Number.class.isAssignableFrom(aClass);
 	}
 }
