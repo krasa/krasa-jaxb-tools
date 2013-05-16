@@ -103,14 +103,19 @@ public class Utils {
 			}
 		}
 		try {
-			Class aClass = Class.forName(field.type().fullName());
-			while (aClass.getSuperclass() != Object.class) {
-				if (aClass.getSuperclass() == Number.class) {
-					return true;
-				}
-			}
+			if (isNumber(Class.forName(field.type().fullName()))) return true;
 		} catch (Exception e) {
 			// whatever
+		}
+		return false;
+	}
+
+	protected static boolean isNumber(Class<?> aClass) {
+		while (aClass.getSuperclass() != Object.class) {
+			if (aClass.getSuperclass() == Number.class) {
+				return true;
+			}
+			aClass = aClass.getSuperclass();
 		}
 		return false;
 	}
