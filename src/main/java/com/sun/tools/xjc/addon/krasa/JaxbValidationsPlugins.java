@@ -197,7 +197,7 @@ public class JaxbValidationsPlugins extends Plugin {
 	}
 
 	public void processType(XSSimpleType simpleType, JFieldVar field, String propertyName, String className) {
-		if (!hasAnnotation(field, Size.class) && field.type().name().equals("String")) {
+		if (!hasAnnotation(field, Size.class) && isSizeAnnotationApplicable(field)) {
 			Integer maxLength = simpleType.getFacet("maxLength") == null ? null : Utils.parseInt(simpleType.getFacet(
 					"maxLength").getValue().value);
 			Integer minLength = simpleType.getFacet("minLength") == null ? null : Utils.parseInt(simpleType.getFacet(
@@ -284,6 +284,10 @@ public class JaxbValidationsPlugins extends Plugin {
 				}
 			}
 		}
+	}
+
+	private boolean isSizeAnnotationApplicable(JFieldVar field) {
+		return field.type().name().equals("String")|| field.type().isArray() ;
 	}
 
 	/*attribute from parent declaration*/
