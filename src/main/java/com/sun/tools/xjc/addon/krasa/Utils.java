@@ -25,7 +25,7 @@ public class Utils {
 		}
 	}
 
-	public static Field getSimpleField(String fieldName, Class<?> clazz) {
+	private static Field getSimpleField(String fieldName, Class<?> clazz) {
 		Class<?> tmpClass = clazz;
 		try {
 			do {
@@ -40,7 +40,7 @@ public class Utils {
 				tmpClass = tmpClass.getSuperclass();
 			} while (clazz != null);
 		} catch (Exception e) {
-			System.out.println("Field '" + fieldName + "' not found on class " + clazz);
+			System.err.println("krasa-jaxb-tools - Field '" + fieldName + "' not found on class " + clazz);
 		}
 		return null;
 	}
@@ -59,7 +59,7 @@ public class Utils {
 				return simpleField.get(oo);
 			}
 		} catch (Exception e) {
-			System.out.println("Field " + path + " not found on " + oo.getClass().getName());
+			System.err.println("krasa-jaxb-tools - Field " + path + " not found on " + oo.getClass().getName() );
 		}
 		return null;
 	}

@@ -85,6 +85,7 @@ Usage:
                          	<!--optional, this is default values-->
                             <extraarg>-xjc-XJsr303Annotations:generateNotNullAnnotations=true</extraarg>
                             <extraarg>-xjc-XJsr303Annotations:JSR_349=false</extraarg>
+                            <extraarg>-xjc-XJsr303Annotations:verbose=false</extraarg>
                         </extraargs>
                     </wsdlOption>
                 </wsdlOptions>

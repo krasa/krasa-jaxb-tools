@@ -44,15 +44,17 @@ import com.sun.xml.xsom.impl.parser.DelayedRef;
  * big thanks to original author: cocorossello
  */
 public class JaxbValidationsPlugins extends Plugin {
-
+	
 	public static final String PLUGIN_OPTION_NAME = "XJsr303Annotations";
 	public static final String TARGET_NAMESPACE_PARAMETER_NAME = PLUGIN_OPTION_NAME + ":targetNamespace";
 	public static final String JSR_349 = PLUGIN_OPTION_NAME + ":JSR_349";
 	public static final String GENERATE_NOT_NULL_ANNOTATIONS = PLUGIN_OPTION_NAME + ":generateNotNullAnnotations";
+	public static final String VERBOSE = PLUGIN_OPTION_NAME + ":verbose";
 
 	protected String namespace = "http://jaxb.dev.java.net/plugin/code-injector";
 	public String targetNamespace = "TARGET_NAMESPACE";
 	public boolean jsr349 = false;
+	public boolean verbose = true;
 	public boolean notNullAnnotations = true;
 
 	public String getOptionName() {
@@ -79,6 +81,13 @@ public class JaxbValidationsPlugins extends Plugin {
 		if (index_generateNotNullAnnotations > 0) {
 			notNullAnnotations = Boolean.parseBoolean(arg1.substring(index_generateNotNullAnnotations
 					+ GENERATE_NOT_NULL_ANNOTATIONS.length() + "=".length()));
+			consumed++;
+		}
+
+		int index_verbose = arg1.indexOf(VERBOSE);
+		if (index_verbose > 0) {
+			verbose = Boolean.parseBoolean(arg1.substring(index_verbose
+					+ VERBOSE.length() + "=".length()));
 			consumed++;
 		}
 
@@ -116,10 +125,9 @@ public class JaxbValidationsPlugins extends Plugin {
 					}
 				}
 			}
-
 			return true;
 		} catch (Exception e) {
-			e.printStackTrace();
+			log(e);
 			return false;
 		}
 	}
@@ -141,7 +149,7 @@ public class JaxbValidationsPlugins extends Plugin {
 		if (minOccurs < 0 || minOccurs >= 1 && required) {
 			if (!hasAnnotation(field, NotNull.class)) {
 				if (notNullAnnotations) {
-					System.out.println("@NotNull: " + propertyName(property) + " added to class "
+					log("@NotNull: " + propertyName(property) + " added to class "
 							+ classOutline.implClass.name());
 					field.annotate(NotNull.class);
 				}
@@ -149,14 +157,14 @@ public class JaxbValidationsPlugins extends Plugin {
 		}
 		if (maxOccurs > 1) {
 			if (!hasAnnotation(field, Size.class)) {
-				System.out.println("@Size (" + minOccurs + "," + maxOccurs + ") " + propertyName(property)
+				log("@Size (" + minOccurs + "," + maxOccurs + ") " + propertyName(property)
 						+ " added to class " + classOutline.implClass.name());
 				field.annotate(Size.class).param("min", minOccurs).param("max", maxOccurs);
 			}
 		}
 		if (maxOccurs == -1 && minOccurs > 0) { // maxOccurs="unbounded"
 			if (!hasAnnotation(field, Size.class)) {
-				System.out.println("@Size (" + minOccurs + ") " + propertyName(property) + " added to class "
+				log("@Size (" + minOccurs + ") " + propertyName(property) + " added to class "
 						+ classOutline.implClass.name());
 				field.annotate(Size.class).param("min", minOccurs);
 			}
@@ -190,7 +198,7 @@ public class JaxbValidationsPlugins extends Plugin {
 								 final String className) {
 		if (elementType.getTargetNamespace().startsWith(targetNamespace) && elementType.isComplexType()) {
 			if (!hasAnnotation(var, Valid.class)) {
-				System.out.println("@Valid: " + propertyName + " added to class " + className);
+				log("@Valid: " + propertyName + " added to class " + className);
 				var.annotate(Valid.class);
 			}
 		}
@@ -203,14 +211,14 @@ public class JaxbValidationsPlugins extends Plugin {
 			Integer minLength = simpleType.getFacet("minLength") == null ? null : Utils.parseInt(simpleType.getFacet(
 					"minLength").getValue().value);
 			if (maxLength != null && minLength != null) {
-				System.out.println("@Size(" + minLength + "," + maxLength + "): " + propertyName + " added to class "
+				log("@Size(" + minLength + "," + maxLength + "): " + propertyName + " added to class "
 						+ className);
 				field.annotate(Size.class).param("min", minLength).param("max", maxLength);
 			} else if (minLength != null) {
-				System.out.println("@Size(" + minLength + ", null): " + propertyName + " added to class " + className);
+				log("@Size(" + minLength + ", null): " + propertyName + " added to class " + className);
 				field.annotate(Size.class).param("min", minLength);
 			} else if (maxLength != null) {
-				System.out.println("@Size(null, " + maxLength + "): " + propertyName + " added to class " + className);
+				log("@Size(null, " + maxLength + "): " + propertyName + " added to class " + className);
 				field.annotate(Size.class).param("max", maxLength);
 			}
 		}
@@ -218,14 +226,14 @@ public class JaxbValidationsPlugins extends Plugin {
 		XSFacet maxInclusive = simpleType.getFacet("maxInclusive");
 		if (maxInclusive != null && Utils.isNumber(field) && isValidValue(maxInclusive)
 				&& !hasAnnotation(field, DecimalMax.class)) {
-			System.out.println("@DecimalMax(" + maxInclusive.getValue().value + "): " + propertyName
+			log("@DecimalMax(" + maxInclusive.getValue().value + "): " + propertyName
 					+ " added to class " + className);
 			field.annotate(DecimalMax.class).param("value", maxInclusive.getValue().value);
 		}
 		XSFacet minInclusive = simpleType.getFacet("minInclusive");
 		if (minInclusive != null && Utils.isNumber(field) && isValidValue(minInclusive)
 				&& !hasAnnotation(field, DecimalMin.class)) {
-			System.out.println("@DecimalMin(" + minInclusive.getValue().value + "): " + propertyName
+			log("@DecimalMin(" + minInclusive.getValue().value + "): " + propertyName
 					+ " added to class " + className);
 			field.annotate(DecimalMin.class).param("value", minInclusive.getValue().value);
 		}
@@ -233,7 +241,7 @@ public class JaxbValidationsPlugins extends Plugin {
 		XSFacet maxExclusive = simpleType.getFacet("maxExclusive");
 		if (maxExclusive != null && Utils.isNumber(field) && isValidValue(maxExclusive)
 				&& !hasAnnotation(field, DecimalMax.class)) {
-			System.out.println("@DecimalMax(" + maxExclusive.getValue().value + "): " + propertyName
+			log("@DecimalMax(" + maxExclusive.getValue().value + "): " + propertyName
 					+ " added to class " + className);
 			JAnnotationUse annotate = field.annotate(DecimalMax.class);
 			annotate.param("value", maxExclusive.getValue().value);
@@ -244,7 +252,7 @@ public class JaxbValidationsPlugins extends Plugin {
 		XSFacet minExclusive = simpleType.getFacet("minExclusive");
 		if (minExclusive != null && Utils.isNumber(field) && isValidValue(minExclusive)
 				&& !hasAnnotation(field, DecimalMin.class)) {
-			System.out.println("@DecimalMin(" + minExclusive.getValue().value + "): " + propertyName
+			log("@DecimalMin(" + minExclusive.getValue().value + "): " + propertyName
 					+ " added to class " + className);
 			JAnnotationUse annotate = field.annotate(DecimalMin.class);
 			annotate.param("value", minExclusive.getValue().value);
@@ -259,7 +267,7 @@ public class JaxbValidationsPlugins extends Plugin {
 			int fractionDigits = simpleType.getFacet("fractionDigits") == null ? 0
 					: Utils.parseInt(simpleType.getFacet("fractionDigits").getValue().value);
 			if (!hasAnnotation(field, Digits.class)) {
-				System.out.println("@Digits(" + totalDigits + "," + fractionDigits + "): " + propertyName
+				log("@Digits(" + totalDigits + "," + fractionDigits + "): " + propertyName
 						+ " added to class " + className);
 				JAnnotationUse annox = field.annotate(Digits.class).param("integer", (totalDigits - fractionDigits));
 				if (simpleType.getFacet("fractionDigits") != null) {
@@ -277,7 +285,7 @@ public class JaxbValidationsPlugins extends Plugin {
 			if ("String".equals(field.type().name())) {
 				// cxf-codegen fix
 				if (!"\\c+".equals(pattern)) {
-					System.out.println("@Pattern(" + pattern + "): " + propertyName + " added to class " + className);
+					log("@Pattern(" + pattern + "): " + propertyName + " added to class " + className);
 					if (!hasAnnotation(field, Pattern.class)) {
 						field.annotate(Pattern.class).param("regexp", pattern);
 					}
@@ -296,7 +304,7 @@ public class JaxbValidationsPlugins extends Plugin {
 		String propertyName = property.getName(false);
 		String className = clase.implClass.name();
 
-		System.out.println("Attribute " + propertyName + " added to class " + className);
+		log("Attribute " + propertyName + " added to class " + className);
 		XSComponent definition = property.getSchemaComponent();
 		RestrictionSimpleTypeImpl particle = (RestrictionSimpleTypeImpl) definition;
 		XSSimpleType type = particle.asSimpleType();
@@ -324,7 +332,7 @@ public class JaxbValidationsPlugins extends Plugin {
 		String propertyName = property.getName(false);
 		String className = clase.implClass.name();
 
-		System.out.println("Attribute " + propertyName + " added to class " + className);
+		log("Attribute " + propertyName + " added to class " + className);
 		XSComponent definition = property.getSchemaComponent();
 		AttributeUseImpl particle = (AttributeUseImpl) definition;
 		XSSimpleType type = particle.getDecl().getType();
@@ -333,7 +341,7 @@ public class JaxbValidationsPlugins extends Plugin {
 		if (particle.isRequired()) {
 			if (!hasAnnotation(var, NotNull.class)) {
 				if (notNullAnnotations) {
-					System.out.println("@NotNull: " + propertyName + " added to class " + className);
+					log("@NotNull: " + propertyName + " added to class " + className);
 					var.annotate(NotNull.class);
 				}
 			}
@@ -365,5 +373,16 @@ public class JaxbValidationsPlugins extends Plugin {
 
 	private String propertyName(CElementPropertyInfo property) {
 		return property.getName(false);
+	}
+
+
+	private void log(Exception e) {
+		e.printStackTrace();
+	}
+
+	private void log(String log) {
+		if (verbose) {
+			System.out.println(log);
+		}
 	}
 }
