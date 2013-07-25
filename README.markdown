@@ -4,7 +4,7 @@ Actual Release:
 <dependency>
     <groupId>com.github.krasa</groupId>
     <artifactId>krasa-jaxb-tools</artifactId>
-    <version>0.6</version>
+    <version>0.7</version>
 </dependency>
 ```
 Snapshot:
