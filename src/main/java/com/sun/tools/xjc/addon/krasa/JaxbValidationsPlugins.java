@@ -261,7 +261,7 @@ public class JaxbValidationsPlugins extends Plugin {
 			}
 		}
 
-		if (simpleType.getFacet("totalDigits") != null) {
+		if (simpleType.getFacet("totalDigits") != null && Utils.isNumber(field)) {
 			Integer totalDigits = simpleType.getFacet("totalDigits") == null ? null
 					: Utils.parseInt(simpleType.getFacet("totalDigits").getValue().value);
 			int fractionDigits = simpleType.getFacet("fractionDigits") == null ? 0
