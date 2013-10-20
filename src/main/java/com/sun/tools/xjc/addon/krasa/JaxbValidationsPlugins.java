@@ -270,9 +270,7 @@ public class JaxbValidationsPlugins extends Plugin {
 				log("@Digits(" + totalDigits + "," + fractionDigits + "): " + propertyName
 						+ " added to class " + className);
 				JAnnotationUse annox = field.annotate(Digits.class).param("integer", (totalDigits - fractionDigits));
-				if (simpleType.getFacet("fractionDigits") != null) {
-					annox.param("fraction", fractionDigits);
-				}
+				annox.param("fraction", fractionDigits);
 			}
 		}
 		/**
