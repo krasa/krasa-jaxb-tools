@@ -52,7 +52,7 @@ public class JaxbValidationsPlugins extends Plugin {
 	public static final String VERBOSE = PLUGIN_OPTION_NAME + ":verbose";
 
 	protected String namespace = "http://jaxb.dev.java.net/plugin/code-injector";
-	public String targetNamespace = "TARGET_NAMESPACE";
+	public String targetNamespace = null;
 	public boolean jsr349 = false;
 	public boolean verbose = true;
 	public boolean notNullAnnotations = true;
@@ -196,7 +196,7 @@ public class JaxbValidationsPlugins extends Plugin {
 
 	private void validAnnotation(final XSType elementType, JFieldVar var, final String propertyName,
 								 final String className) {
-		if (elementType.getTargetNamespace().startsWith(targetNamespace) && elementType.isComplexType()) {
+		if ((targetNamespace == null || elementType.getTargetNamespace().startsWith(targetNamespace)) && elementType.isComplexType()) {
 			if (!hasAnnotation(var, Valid.class)) {
 				log("@Valid: " + propertyName + " added to class " + className);
 				var.annotate(Valid.class);

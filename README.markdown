@@ -13,7 +13,7 @@ Snapshot:
 <dependency>
     <groupId>com.github.krasa</groupId>
     <artifactId>krasa-jaxb-tools</artifactId>
-    <version>0.X-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
 </dependency>
 
 <repository>
