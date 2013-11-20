@@ -4,7 +4,7 @@ Actual Release:
 <dependency>
     <groupId>com.github.krasa</groupId>
     <artifactId>krasa-jaxb-tools</artifactId>
-    <version>0.9</version>
+    <version>1.0</version>
 </dependency>
 ```
 Snapshot:
@@ -38,7 +38,7 @@ Contains:
 XJsr303Annotations
 ----------------
 Generates:
-* @Valid annotation for objects defined in schema: -XJsr303Annotations:targetNamespace=http://www.foo.com/bar
+* @Valid annotation for all complex types, can be further restricted to generate only for types from defined schema: -XJsr303Annotations:targetNamespace=http://www.foo.com/bar
 * @NotNull annotation for objects that has a MinOccur value >= 1 or for attributes with required use
 * @Size for lists that have minOccurs > 1
 * @Size if there is a maxLength or minLength restriction
@@ -81,6 +81,7 @@ Usage:
                         <extraargs>
                             ...
                             <extraarg>-xjc-XJsr303Annotations</extraarg>
+							<!--optional-->
                             <extraarg>-xjc-XJsr303Annotations:targetNamespace=http://www.foo.com/bar</extraarg>
                          	<!--optional, this is default values-->
                             <extraarg>-xjc-XJsr303Annotations:generateNotNullAnnotations=true</extraarg>
@@ -133,7 +134,6 @@ Usage:
                 <extension>true</extension>
                 <args>
                     <arg>-XJsr303Annotations</arg>
-                    <arg>-XJsr303Annotations:targetNamespace=http://www.foo.com/bar</arg>
                 </args>
                 <plugins>
                     <plugin>
