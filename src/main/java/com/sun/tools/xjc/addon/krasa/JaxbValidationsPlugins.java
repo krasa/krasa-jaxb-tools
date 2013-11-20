@@ -285,11 +285,16 @@ public class JaxbValidationsPlugins extends Plugin {
 				if (!"\\c+".equals(pattern)) {
 					log("@Pattern(" + pattern + "): " + propertyName + " added to class " + className);
 					if (!hasAnnotation(field, Pattern.class)) {
-						field.annotate(Pattern.class).param("regexp", pattern);
+						field.annotate(Pattern.class).param("regexp", replaceXmlProprietals(pattern));
 					}
 				}
+				
 			}
 		}
+	}
+
+	private String replaceXmlProprietals(String pattern) {
+		return pattern.replace("\\i", "[_:A-Za-z]").replace("\\c", "[-._:A-Za-z0-9]");
 	}
 
 	private boolean isSizeAnnotationApplicable(JFieldVar field) {

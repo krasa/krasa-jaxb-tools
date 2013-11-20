@@ -48,6 +48,7 @@
 	<xsd:complexType name="Strings">
 		<xsd:sequence>
 			<xsd:element name="pattern" type="a:pattern"/>
+			<xsd:element name="idType" type="a:idType"/>
 			<xsd:element name="genericString" type="a:minMaxLength"/>
 			<xsd:element name="maxLength" type="a:maxLength"/>
 			<xsd:element name="minLength" type="a:minLength"/>
@@ -143,5 +144,11 @@
 	      <xsd:restriction base="xsd:hexBinary">
 	          <xsd:maxLength value="18" />
 	      </xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:simpleType name="idType">
+	    <xsd:restriction base="xsd:ID">
+	        <xsd:maxLength value="100"/>
+	    </xsd:restriction>
 	</xsd:simpleType>
 </xsd:schema>
