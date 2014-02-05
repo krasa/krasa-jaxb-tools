@@ -14,6 +14,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
+import com.sun.codemodel.JAnnotationArrayMember;
 import com.sun.tools.xjc.model.CValuePropertyInfo;
 import com.sun.xml.xsom.impl.RestrictionSimpleTypeImpl;
 import org.xml.sax.ErrorHandler;
@@ -278,7 +279,23 @@ public class JaxbValidationsPlugins extends Plugin {
 		 * message="Name can only contain capital letters, numbers and the symbols '-', '_', '/', ' '"
 		 * regexp="^[A-Z0-9_\s//-]*" />
 		 */
-		if (simpleType.getFacet("pattern") != null) {
+		List<XSFacet> patternList = simpleType.getFacets("pattern");
+		if (patternList.size() > 1) { // More than one pattern
+			log("@Pattern.List: " + propertyName + " added to class " + className);
+			JAnnotationUse patternListAnnotation = field.annotate(Pattern.List.class);
+			JAnnotationArrayMember listValue = patternListAnnotation.paramArray("value");
+
+			String value;
+			for (XSFacet xsFacet : patternList) {
+				if ("String".equals(field.type().name())) {
+					value = xsFacet.getValue().value;
+					// cxf-codegen fix
+					if (!"\\c+".equals(value)) {
+						listValue.annotate(Pattern.class).param("regexp", replaceXmlProprietals(value));
+					}
+				}
+			}
+		} else if (simpleType.getFacet("pattern") != null) {
 			String pattern = simpleType.getFacet("pattern").getValue().value;
 			if ("String".equals(field.type().name())) {
 				// cxf-codegen fix
