@@ -40,6 +40,7 @@ import com.sun.xml.xsom.impl.AttributeUseImpl;
 import com.sun.xml.xsom.impl.ElementDecl;
 import com.sun.xml.xsom.impl.ParticleImpl;
 import com.sun.xml.xsom.impl.parser.DelayedRef;
+import javax.persistence.Column;
 
 /**
  * big thanks to original author: cocorossello
@@ -51,12 +52,14 @@ public class JaxbValidationsPlugins extends Plugin {
 	public static final String JSR_349 = PLUGIN_OPTION_NAME + ":JSR_349";
 	public static final String GENERATE_NOT_NULL_ANNOTATIONS = PLUGIN_OPTION_NAME + ":generateNotNullAnnotations";
 	public static final String VERBOSE = PLUGIN_OPTION_NAME + ":verbose";
+        public static final String GENERATE_JPA_ANNOTATIONS = PLUGIN_OPTION_NAME + ":jpa";
 
 	protected String namespace = "http://jaxb.dev.java.net/plugin/code-injector";
 	public String targetNamespace = null;
 	public boolean jsr349 = false;
 	public boolean verbose = true;
 	public boolean notNullAnnotations = true;
+        public boolean jpaAnnotations = false;
 
 	public String getOptionName() {
 		return PLUGIN_OPTION_NAME;
@@ -89,6 +92,12 @@ public class JaxbValidationsPlugins extends Plugin {
 		if (index_verbose > 0) {
 			verbose = Boolean.parseBoolean(arg1.substring(index_verbose
 					+ VERBOSE.length() + "=".length()));
+			consumed++;
+		}
+		int index_generateJpaAnnotations = arg1.indexOf(GENERATE_JPA_ANNOTATIONS);
+		if (index_generateJpaAnnotations > 0) {
+			jpaAnnotations = Boolean.parseBoolean(arg1.substring(index_generateJpaAnnotations
+					+ GENERATE_JPA_ANNOTATIONS.length() + "=".length()));
 			consumed++;
 		}
 
@@ -223,7 +232,14 @@ public class JaxbValidationsPlugins extends Plugin {
 				field.annotate(Size.class).param("max", maxLength);
 			}
 		}
-
+		if (jpaAnnotations && isSizeAnnotationApplicable(field)) {
+			Integer maxLength = simpleType.getFacet("maxLength") == null ? null : Utils.parseInt(simpleType.getFacet(
+					"maxLength").getValue().value);
+                        if (maxLength != null) {
+				log("@Column(null, " + maxLength + "): " + propertyName + " added to class " + className);
+				field.annotate(Column.class).param("length", maxLength);
+			}
+                }
 		XSFacet maxInclusive = simpleType.getFacet("maxInclusive");
 		if (maxInclusive != null && Utils.isNumber(field) && isValidValue(maxInclusive)
 				&& !hasAnnotation(field, DecimalMax.class)) {
@@ -273,6 +289,9 @@ public class JaxbValidationsPlugins extends Plugin {
 				JAnnotationUse annox = field.annotate(Digits.class).param("integer", (totalDigits - fractionDigits));
 				annox.param("fraction", fractionDigits);
 			}
+                        if (jpaAnnotations){
+                            field.annotate(Column.class).param("precision", totalDigits).param("scale", fractionDigits);
+                        }
 		}
 		/**
 		 * <annox:annotate annox:class="javax.validation.constraints.Pattern"
