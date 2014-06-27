@@ -49,6 +49,12 @@ Generates:
 * @Digits if there is a totalDigits or fractionDigits restriction.
 * @Pattern if there is a Pattern restriction
 
+@NotNull's default validation message is not always helpful, so it can be customized with **-XJsr303Annotations:notNullAnnotationsCustomMessages=OPTION** where **OPTION** is one of the following:
+* `false` (default: no custom message -- not useful)
+* `true` (message is present but equivalent to the default: **"{javax.validation.constraints.NotNull.message}"** -- not useful)
+* `FieldName` (field name is prefixed to the default message: **"field {javax....message}"**)
+* `ClassName` (class and field name are prefixed to the default message: **"Class.field {javax....message}"**)
+* `other-non-empty-text` (arbitrary message, with substitutable, case-sensitive parameters `{ClassName}` and `{FieldName}`: **"Class {ClassName} field {FieldName} non-null"**)
 
 XReplacePrimitives
 ----------------
@@ -85,6 +91,8 @@ Usage:
                             <extraarg>-xjc-XJsr303Annotations:targetNamespace=http://www.foo.com/bar</extraarg>
                          	<!--optional, this is default values-->
                             <extraarg>-xjc-XJsr303Annotations:generateNotNullAnnotations=true</extraarg>
+                         	<!--optional, default is false, possible values are true, FieldName, ClassName, or an actual message -->
+                            <extraarg>-xjc-XJsr303Annotations:notNullAnnotationsCustomMessages=false</extraarg>
                             <extraarg>-xjc-XJsr303Annotations:JSR_349=false</extraarg>
                             <extraarg>-xjc-XJsr303Annotations:verbose=false</extraarg>
                         </extraargs>
