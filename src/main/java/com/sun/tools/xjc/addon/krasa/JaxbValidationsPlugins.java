@@ -3,6 +3,7 @@ package com.sun.tools.xjc.addon.krasa;
 import static com.sun.tools.xjc.addon.krasa.Utils.toInt;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
 
@@ -258,23 +259,31 @@ public class JaxbValidationsPlugins extends Plugin {
 		XSFacet maxExclusive = simpleType.getFacet("maxExclusive");
 		if (maxExclusive != null && Utils.isNumber(field) && isValidValue(maxExclusive)
 				&& !hasAnnotation(field, DecimalMax.class)) {
-			log("@DecimalMax(" + maxExclusive.getValue().value + "): " + propertyName
-					+ " added to class " + className);
 			JAnnotationUse annotate = field.annotate(DecimalMax.class);
-			annotate.param("value", maxExclusive.getValue().value);
 			if (jsr349) {
+				log("@DecimalMax(value = " + maxExclusive.getValue().value + ", inclusive = false): " + propertyName
+						+ " added to class " + className);
+				annotate.param("value", maxExclusive.getValue().value);
 				annotate.param("inclusive", false);
+			} else {
+				final BigInteger value = new BigInteger(maxExclusive.getValue().value).subtract(BigInteger.ONE);
+				log("@DecimalMax(" + value.toString() + "): " + propertyName + " added to class " + className);
+				annotate.param("value", value.toString());
 			}
 		}
 		XSFacet minExclusive = simpleType.getFacet("minExclusive");
 		if (minExclusive != null && Utils.isNumber(field) && isValidValue(minExclusive)
 				&& !hasAnnotation(field, DecimalMin.class)) {
-			log("@DecimalMin(" + minExclusive.getValue().value + "): " + propertyName
-					+ " added to class " + className);
 			JAnnotationUse annotate = field.annotate(DecimalMin.class);
-			annotate.param("value", minExclusive.getValue().value);
 			if (jsr349) {
+				log("@DecimalMin(value = " + minExclusive.getValue().value + ", inclusive = false): " + propertyName
+						+ " added to class " + className);
+				annotate.param("value", minExclusive.getValue().value);
 				annotate.param("inclusive", false);
+			} else {
+				final BigInteger value = new BigInteger(minExclusive.getValue().value).add(BigInteger.ONE);
+				log("@DecimalMax(" + value.toString() + "): " + propertyName + " added to class " + className);
+				annotate.param("value", value.toString());
 			}
 		}
 
