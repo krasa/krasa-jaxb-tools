@@ -10,7 +10,7 @@ import org.jvnet.jaxb2.maven2.test.RunXJC2Mojo;
 
 public class RunPluginTest extends RunXJC2Mojo {
 
-	public static final String STRING = "multiplePatterns";
+	public static final String STRING = "notNull";
 
 	protected File getGeneratedDirectory() {
 		return new File(getBaseDir(), "target/generated-sources/" + STRING);
@@ -34,7 +34,7 @@ public class RunPluginTest extends RunXJC2Mojo {
 	public List<String> getArgs() {
 		final List<String> args = new ArrayList<String>(super.getArgs());
 		args.add("-XJsr303Annotations");
-//		args.add("-XJsr303Annotations:targetNamespace=a");
+		args.add("-XJsr303Annotations:notNullAnnotationsCustomMessages=ClassName");
 		// args.add("-XJsr303Annotations:JSR_349=true");
 		return args;
 	}
