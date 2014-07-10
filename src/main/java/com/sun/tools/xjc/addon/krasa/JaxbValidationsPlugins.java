@@ -52,6 +52,7 @@ public class JaxbValidationsPlugins extends Plugin {
 	public static final String TARGET_NAMESPACE_PARAMETER_NAME = PLUGIN_OPTION_NAME + ":targetNamespace";
 	public static final String JSR_349 = PLUGIN_OPTION_NAME + ":JSR_349";
 	public static final String GENERATE_NOT_NULL_ANNOTATIONS = PLUGIN_OPTION_NAME + ":generateNotNullAnnotations";
+	public static final String NOT_NULL_ANNOTATIONS_CUSTOM_MESSAGES = PLUGIN_OPTION_NAME + ":notNullAnnotationsCustomMessages";
 	public static final String VERBOSE = PLUGIN_OPTION_NAME + ":verbose";
 	public static final String GENERATE_JPA_ANNOTATIONS = PLUGIN_OPTION_NAME + ":jpa";
 
@@ -60,6 +61,10 @@ public class JaxbValidationsPlugins extends Plugin {
 	public boolean jsr349 = false;
 	public boolean verbose = true;
 	public boolean notNullAnnotations = true;
+	public boolean notNullCustomMessages;
+	public boolean notNullPrefixFieldName;
+	public boolean notNullPrefixClassName;
+	public String notNullCustomMessage = null;
 	public boolean jpaAnnotations = false;
 
 	public String getOptionName() {
@@ -86,6 +91,22 @@ public class JaxbValidationsPlugins extends Plugin {
 		if (index_generateNotNullAnnotations > 0) {
 			notNullAnnotations = Boolean.parseBoolean(arg1.substring(index_generateNotNullAnnotations
 					+ GENERATE_NOT_NULL_ANNOTATIONS.length() + "=".length()));
+			consumed++;
+		}
+
+		int index_notNullCustomMessages = arg1.indexOf(NOT_NULL_ANNOTATIONS_CUSTOM_MESSAGES);
+		if (index_notNullCustomMessages > 0) {
+			String value = arg1.substring(index_notNullCustomMessages + NOT_NULL_ANNOTATIONS_CUSTOM_MESSAGES.length() + "=".length()).trim();
+			notNullCustomMessages = Boolean.parseBoolean(value);
+			if (!notNullCustomMessages) {
+				if (value.equalsIgnoreCase("classname")) {
+					notNullCustomMessages = notNullPrefixFieldName = notNullPrefixClassName = true;
+				} else if (value.equalsIgnoreCase("fieldname")) {
+					notNullCustomMessages = notNullPrefixFieldName = true;
+				} else if (!value.equals("") && !value.equals("FALSE")) {
+					notNullCustomMessage = value;
+				}
+			}
 			consumed++;
 		}
 
@@ -159,11 +180,7 @@ public class JaxbValidationsPlugins extends Plugin {
 		boolean required = property.isRequired();
 		if (minOccurs < 0 || minOccurs >= 1 && required) {
 			if (!hasAnnotation(field, NotNull.class)) {
-				if (notNullAnnotations) {
-					log("@NotNull: " + propertyName(property) + " added to class "
-							+ classOutline.implClass.name());
-					field.annotate(NotNull.class);
-				}
+				processNotNull(classOutline, field);
 			}
 		}
 		if (maxOccurs > 1) {
@@ -202,6 +219,22 @@ public class JaxbValidationsPlugins extends Plugin {
 			processType((XSSimpleType) elementType, var, propertyName, className);
 		} else if (elementType.getBaseType() instanceof XSSimpleType) {
 			processType((XSSimpleType) elementType.getBaseType(), var, propertyName, className);
+		}
+	}
+
+	private void processNotNull(ClassOutline co, JFieldVar field) {
+		if (notNullAnnotations) {
+			log("@NotNull: " + field.name() + " added to class " + co.implClass.name());
+			JAnnotationUse annotation = field.annotate(NotNull.class);
+			if (notNullPrefixClassName) {
+				annotation.param("message", String.format("%s.%s {%s.message}", co.implClass.name(), field.name(), NotNull.class.getName()));
+			} else if (notNullPrefixFieldName) {
+				annotation.param("message", String.format("%s {%s.message}", field.name(), NotNull.class.getName()));
+			} else if (notNullCustomMessages) {
+				annotation.param("message", String.format("{%s.message}", NotNull.class.getName()));
+			} else if (notNullCustomMessage != null) {
+				annotation.param("message", notNullCustomMessage.replace("{ClassName}", co.implClass.name()).replace("{FieldName}", field.name()));
+			}
 		}
 	}
 
@@ -386,10 +419,7 @@ public class JaxbValidationsPlugins extends Plugin {
 		JFieldVar var = clase.implClass.fields().get(propertyName);
 		if (particle.isRequired()) {
 			if (!hasAnnotation(var, NotNull.class)) {
-				if (notNullAnnotations) {
-					log("@NotNull: " + propertyName + " added to class " + className);
-					var.annotate(NotNull.class);
-				}
+				processNotNull(clase, var);
 			}
 		}
 
