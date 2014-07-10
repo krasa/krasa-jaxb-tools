@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+import javax.persistence.Column;
 import javax.validation.Valid;
 import javax.validation.constraints.DecimalMax;
 import javax.validation.constraints.DecimalMin;
@@ -14,11 +15,9 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
-import com.sun.codemodel.JAnnotationArrayMember;
-import com.sun.tools.xjc.model.CValuePropertyInfo;
-import com.sun.xml.xsom.impl.RestrictionSimpleTypeImpl;
 import org.xml.sax.ErrorHandler;
 
+import com.sun.codemodel.JAnnotationArrayMember;
 import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JFieldVar;
 import com.sun.tools.xjc.BadCommandLineException;
@@ -27,6 +26,7 @@ import com.sun.tools.xjc.Plugin;
 import com.sun.tools.xjc.model.CAttributePropertyInfo;
 import com.sun.tools.xjc.model.CElementPropertyInfo;
 import com.sun.tools.xjc.model.CPropertyInfo;
+import com.sun.tools.xjc.model.CValuePropertyInfo;
 import com.sun.tools.xjc.outline.ClassOutline;
 import com.sun.tools.xjc.outline.FieldOutline;
 import com.sun.tools.xjc.outline.Outline;
@@ -39,8 +39,8 @@ import com.sun.xml.xsom.XSType;
 import com.sun.xml.xsom.impl.AttributeUseImpl;
 import com.sun.xml.xsom.impl.ElementDecl;
 import com.sun.xml.xsom.impl.ParticleImpl;
+import com.sun.xml.xsom.impl.RestrictionSimpleTypeImpl;
 import com.sun.xml.xsom.impl.parser.DelayedRef;
-import javax.persistence.Column;
 
 /**
  * big thanks to original author: cocorossello
@@ -52,14 +52,14 @@ public class JaxbValidationsPlugins extends Plugin {
 	public static final String JSR_349 = PLUGIN_OPTION_NAME + ":JSR_349";
 	public static final String GENERATE_NOT_NULL_ANNOTATIONS = PLUGIN_OPTION_NAME + ":generateNotNullAnnotations";
 	public static final String VERBOSE = PLUGIN_OPTION_NAME + ":verbose";
-        public static final String GENERATE_JPA_ANNOTATIONS = PLUGIN_OPTION_NAME + ":jpa";
+	public static final String GENERATE_JPA_ANNOTATIONS = PLUGIN_OPTION_NAME + ":jpa";
 
 	protected String namespace = "http://jaxb.dev.java.net/plugin/code-injector";
 	public String targetNamespace = null;
 	public boolean jsr349 = false;
 	public boolean verbose = true;
 	public boolean notNullAnnotations = true;
-        public boolean jpaAnnotations = false;
+	public boolean jpaAnnotations = false;
 
 	public String getOptionName() {
 		return PLUGIN_OPTION_NAME;
@@ -235,11 +235,11 @@ public class JaxbValidationsPlugins extends Plugin {
 		if (jpaAnnotations && isSizeAnnotationApplicable(field)) {
 			Integer maxLength = simpleType.getFacet("maxLength") == null ? null : Utils.parseInt(simpleType.getFacet(
 					"maxLength").getValue().value);
-                        if (maxLength != null) {
+			if (maxLength != null) {
 				log("@Column(null, " + maxLength + "): " + propertyName + " added to class " + className);
 				field.annotate(Column.class).param("length", maxLength);
 			}
-                }
+		}
 		XSFacet maxInclusive = simpleType.getFacet("maxInclusive");
 		if (maxInclusive != null && Utils.isNumber(field) && isValidValue(maxInclusive)
 				&& !hasAnnotation(field, DecimalMax.class)) {
@@ -289,9 +289,9 @@ public class JaxbValidationsPlugins extends Plugin {
 				JAnnotationUse annox = field.annotate(Digits.class).param("integer", (totalDigits - fractionDigits));
 				annox.param("fraction", fractionDigits);
 			}
-                        if (jpaAnnotations){
-                            field.annotate(Column.class).param("precision", totalDigits).param("scale", fractionDigits);
-                        }
+			if (jpaAnnotations) {
+				field.annotate(Column.class).param("precision", totalDigits).param("scale", fractionDigits);
+			}
 		}
 		/**
 		 * <annox:annotate annox:class="javax.validation.constraints.Pattern"
@@ -304,10 +304,9 @@ public class JaxbValidationsPlugins extends Plugin {
 			JAnnotationUse patternListAnnotation = field.annotate(Pattern.List.class);
 			JAnnotationArrayMember listValue = patternListAnnotation.paramArray("value");
 
-			String value;
 			for (XSFacet xsFacet : patternList) {
 				if ("String".equals(field.type().name())) {
-					value = xsFacet.getValue().value;
+					final String value = xsFacet.getValue().value;
 					// cxf-codegen fix
 					if (!"\\c+".equals(value)) {
 						listValue.annotate(Pattern.class).param("regexp", replaceXmlProprietals(value));
@@ -324,7 +323,6 @@ public class JaxbValidationsPlugins extends Plugin {
 						field.annotate(Pattern.class).param("regexp", replaceXmlProprietals(pattern));
 					}
 				}
-				
 			}
 		}
 	}
