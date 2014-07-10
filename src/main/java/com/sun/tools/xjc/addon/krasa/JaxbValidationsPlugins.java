@@ -304,8 +304,8 @@ public class JaxbValidationsPlugins extends Plugin {
 			JAnnotationUse patternListAnnotation = field.annotate(Pattern.List.class);
 			JAnnotationArrayMember listValue = patternListAnnotation.paramArray("value");
 
-			for (XSFacet xsFacet : patternList) {
-				if ("String".equals(field.type().name())) {
+			if ("String".equals(field.type().name())) {
+				for (XSFacet xsFacet : patternList) {
 					final String value = xsFacet.getValue().value;
 					// cxf-codegen fix
 					if (!"\\c+".equals(value)) {
