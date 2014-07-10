@@ -10,7 +10,7 @@
 
 	<groupId>com.github.krasa</groupId>
 	<artifactId>krasa-jaxb-tools</artifactId>
-	<version>1.1-branch</version>
+	<version>1.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>krasa-jaxb-tools</name>
@@ -53,7 +53,7 @@
 		<junit.version>4.10</junit.version>
 		<maven-compiler-plugin.version>2.5.1</maven-compiler-plugin.version>
 		<maven-surefire-plugin.version>2.14.1</maven-surefire-plugin.version>
-                <javax-persistence.version>2.1.0</javax-persistence.version>
+		<javax-persistence.version>2.1.0</javax-persistence.version>
 	</properties>
 
 	<build>
@@ -143,11 +143,11 @@
 			<artifactId>jaxb-api</artifactId>
 			<version>${jaxb-api.version}</version>
 		</dependency>
-                    <dependency>
-                        <groupId>org.eclipse.persistence</groupId>
-                        <artifactId>javax.persistence</artifactId>
-                        <version>${javax-persistence.version}</version>
-                    </dependency>
+		<dependency>
+			<groupId>org.eclipse.persistence</groupId>
+			<artifactId>javax.persistence</artifactId>
+			<version>${javax-persistence.version}</version>
+		</dependency>
 	</dependencies>
 
 	<profiles>
