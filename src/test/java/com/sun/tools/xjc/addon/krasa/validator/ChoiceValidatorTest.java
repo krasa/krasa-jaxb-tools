@@ -9,7 +9,7 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.util.Set;
 
-public class MatchesValidatorTest {
+public class ChoiceValidatorTest {
 	ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
 	Validator validator = factory.getValidator();
 

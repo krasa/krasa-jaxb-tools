@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MatchesValidator implements ConstraintValidator<Choice, Object> {
+public class ChoiceValidator implements ConstraintValidator<Choice, Object> {
 
 	private String[] fields;
 

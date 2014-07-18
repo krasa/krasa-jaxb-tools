@@ -54,6 +54,7 @@
 		<maven-compiler-plugin.version>2.5.1</maven-compiler-plugin.version>
 		<maven-surefire-plugin.version>2.14.1</maven-surefire-plugin.version>
 		<javax-persistence.version>2.1.0</javax-persistence.version>
+		<commons-beanutils.version>1.9.2</commons-beanutils.version>
 	</properties>
 
 	<build>
@@ -100,6 +101,12 @@
 	</build>
 
 	<dependencies>
+		<dependency>
+			<groupId>commons-beanutils</groupId>
+			<artifactId>commons-beanutils</artifactId>
+			<version>${commons-beanutils.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>com.sun.xml.bind</groupId>
 			<artifactId>jaxb-xjc</artifactId>

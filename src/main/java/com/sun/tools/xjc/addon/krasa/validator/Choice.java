@@ -14,7 +14,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Target({TYPE, ANNOTATION_TYPE})
 @Retention(RUNTIME)
-@Constraint(validatedBy = MatchesValidator.class)
+@Constraint(validatedBy = ChoiceValidator.class)
 @Documented
 public @interface Choice {
 
