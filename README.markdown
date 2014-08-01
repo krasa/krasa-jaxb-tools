@@ -1,3 +1,11 @@
+
+Contains:
+----------------
+* plugin for replacing primitives **-XReplacePrimitives**
+* plugin for generation of Bean Validation Annotations (JSR-303) **-XJsr303Annotations**
+
+---- 
+
 Actual Release:
 ----------------
 ```xml
@@ -28,12 +36,6 @@ Snapshot:
 </repository>
 ```
 
-Contains:
-----------------
-* plugin for replacing primitives **-XReplacePrimitives**
-* plugin for generation of Bean Validation Annotations (JSR-303) **-XJsr303Annotations**
-
----- 
 
 XJsr303Annotations
 ----------------
