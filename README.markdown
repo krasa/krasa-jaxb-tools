@@ -1,7 +1,7 @@
 
 Contains:
 ----------------
-* plugin for replacing primitives **-XReplacePrimitives**
+* plugin for replacing primitives **-XReplacePrimitives** (e.g. int -> Integer)
 * plugin for generation of Bean Validation Annotations (JSR-303) **-XJsr303Annotations**
 
 ---- 
