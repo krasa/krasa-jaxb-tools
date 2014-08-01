@@ -50,6 +50,7 @@ Generates:
 * @DecimalMin for minExclusive restriction, enable new parameter (inclusive=false) with: -XJsr303Annotations:JSR_349=true
 * @Digits if there is a totalDigits or fractionDigits restriction.
 * @Pattern if there is a Pattern restriction
+
 ----------------
 @NotNull's default validation message is not always helpful, so it can be customized with **-XJsr303Annotations:notNullAnnotationsCustomMessages=OPTION** where **OPTION** is one of the following:
 * `false` (default: no custom message -- not useful)
