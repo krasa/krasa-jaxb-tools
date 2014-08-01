@@ -50,14 +50,14 @@ Generates:
 * @DecimalMin for minExclusive restriction, enable new parameter (inclusive=false) with: -XJsr303Annotations:JSR_349=true
 * @Digits if there is a totalDigits or fractionDigits restriction.
 * @Pattern if there is a Pattern restriction
-
+----------------
 @NotNull's default validation message is not always helpful, so it can be customized with **-XJsr303Annotations:notNullAnnotationsCustomMessages=OPTION** where **OPTION** is one of the following:
 * `false` (default: no custom message -- not useful)
 * `true` (message is present but equivalent to the default: **"{javax.validation.constraints.NotNull.message}"** -- not useful)
 * `FieldName` (field name is prefixed to the default message: **"field {javax....message}"**)
 * `ClassName` (class and field name are prefixed to the default message: **"Class.field {javax....message}"**)
 * `other-non-empty-text` (arbitrary message, with substitutable, case-sensitive parameters `{ClassName}` and `{FieldName}`: **"Class {ClassName} field {FieldName} non-null"**)
-
+---- 
 XReplacePrimitives
 ----------------
 replaces following types of fields, setters and getters:
