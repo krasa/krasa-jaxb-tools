@@ -254,6 +254,9 @@ public class JaxbValidationsPlugins extends Plugin {
 					"maxLength").getValue().value);
 			Integer minLength = simpleType.getFacet("minLength") == null ? null : Utils.parseInt(simpleType.getFacet(
 					"minLength").getValue().value);
+			Integer length = simpleType.getFacet("length") == null ? null : Utils.parseInt(simpleType.getFacet(
+					"length").getValue().value);
+
 			if (maxLength != null && minLength != null) {
 				log("@Size(" + minLength + "," + maxLength + "): " + propertyName + " added to class "
 						+ className);
@@ -264,6 +267,10 @@ public class JaxbValidationsPlugins extends Plugin {
 			} else if (maxLength != null) {
 				log("@Size(null, " + maxLength + "): " + propertyName + " added to class " + className);
 				field.annotate(Size.class).param("max", maxLength);
+			} else if (length != null) {
+				log("@Size(" + length + "," + length + "): " + propertyName + " added to class "
+						+ className);
+				field.annotate(Size.class).param("min", length).param("max", length);
 			}
 		}
 		if (jpaAnnotations && isSizeAnnotationApplicable(field)) {
