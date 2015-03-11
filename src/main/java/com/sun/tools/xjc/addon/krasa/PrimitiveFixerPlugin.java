@@ -29,7 +29,7 @@ public class PrimitiveFixerPlugin extends Plugin {
 	@Override
 	public String getUsage() {
 		return "-" + OPTION_NAME
-				+ "    :   Replaces primitive types of fields and methods by proper Class: int to java.lang.Integer, long to java.lang.Long, boolean to java.lang.Boolean  \n";
+				+ "    :   Replaces primitive types of fields and methods by proper Class: int to java.lang.Integer, long to java.lang.Long, boolean to java.lang.Boolean, etc.  \n";
 	}
 
 	@Override
@@ -39,6 +39,10 @@ public class PrimitiveFixerPlugin extends Plugin {
 			hashMap.put("int", Integer.class);
 			hashMap.put("long", Long.class);
 			hashMap.put("boolean", Boolean.class);
+			hashMap.put("double", Double.class);
+			hashMap.put("float", Float.class);
+			hashMap.put("byte", Byte.class);
+			hashMap.put("short", Short.class);
 			Map<String, JFieldVar> fields = co.implClass.fields();
 			Map<String, JMethod> getterSetterMap = getMethodsMap(co);
 

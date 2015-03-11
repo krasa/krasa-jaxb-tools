@@ -64,10 +64,7 @@ Generates:
 ---- 
 XReplacePrimitives
 ----------------
-replaces following types of fields, setters and getters:
-* int to Integer
-* long to Long
-* boolean to Boolean
+replaces primitive types by Objects
 
 ---- 
 Example project:
