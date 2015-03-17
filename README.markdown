@@ -64,7 +64,8 @@ Generates:
 ---- 
 XReplacePrimitives
 ----------------
-replaces primitive types by Objects
+* replaces primitive types by Objects
+* WARNING: must be defined before XhashCode or Xequals
 
 ---- 
 Example project:
