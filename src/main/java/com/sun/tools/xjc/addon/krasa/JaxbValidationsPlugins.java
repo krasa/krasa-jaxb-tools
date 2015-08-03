@@ -16,6 +16,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
+import org.codehaus.plexus.util.StringUtils;
 import org.xml.sax.ErrorHandler;
 
 import com.sun.codemodel.JAnnotationArrayMember;
@@ -31,6 +32,7 @@ import com.sun.tools.xjc.model.CValuePropertyInfo;
 import com.sun.tools.xjc.outline.ClassOutline;
 import com.sun.tools.xjc.outline.FieldOutline;
 import com.sun.tools.xjc.outline.Outline;
+import com.sun.xml.xsom.ForeignAttributes;
 import com.sun.xml.xsom.XSComponent;
 import com.sun.xml.xsom.XSElementDecl;
 import com.sun.xml.xsom.XSFacet;
@@ -39,6 +41,7 @@ import com.sun.xml.xsom.XSTerm;
 import com.sun.xml.xsom.XSType;
 import com.sun.xml.xsom.impl.AttributeUseImpl;
 import com.sun.xml.xsom.impl.ElementDecl;
+import com.sun.xml.xsom.impl.ForeignAttributesImpl;
 import com.sun.xml.xsom.impl.ParticleImpl;
 import com.sun.xml.xsom.impl.RestrictionSimpleTypeImpl;
 import com.sun.xml.xsom.impl.parser.DelayedRef;
@@ -174,11 +177,12 @@ public class JaxbValidationsPlugins extends Plugin {
 		// must be reflection because of cxf-codegen
 		int maxOccurs = toInt(Utils.getField("maxOccurs", particle));
 		int minOccurs = toInt(Utils.getField("minOccurs", particle));
+		boolean nillable = toBoolean(Utils.getField("nillable",particle.getTerm())); 
 		JFieldVar field = classOutline.implClass.fields().get(propertyName(property));
 
 		// workaround for choices
 		boolean required = property.isRequired();
-		if (minOccurs < 0 || minOccurs >= 1 && required) {
+		if (minOccurs < 0 || minOccurs >= 1 && required && !nillable) {
 			if (!hasAnnotation(field, NotNull.class)) {
 				processNotNull(classOutline, field);
 			}
@@ -187,6 +191,7 @@ public class JaxbValidationsPlugins extends Plugin {
 			if (!hasAnnotation(field, Size.class)) {
 				log("@Size (" + minOccurs + "," + maxOccurs + ") " + propertyName(property)
 						+ " added to class " + classOutline.implClass.name());
+
 				field.annotate(Size.class).param("min", minOccurs).param("max", maxOccurs);
 			}
 		}
@@ -206,6 +211,13 @@ public class JaxbValidationsPlugins extends Plugin {
 			processElement(property, classOutline, field, (ElementDecl) xsElementDecl);
 		}
 
+	}
+
+	private boolean toBoolean(Object field) {
+		if(field != null){
+			return Boolean.parseBoolean(field.toString()); 
+		}
+		return false;
 	}
 
 	private void processElement(CElementPropertyInfo property, ClassOutline clase, JFieldVar var, ElementDecl element) {
