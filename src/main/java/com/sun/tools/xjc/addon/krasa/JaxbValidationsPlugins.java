@@ -1,23 +1,5 @@
 package com.sun.tools.xjc.addon.krasa;
 
-import static com.sun.tools.xjc.addon.krasa.Utils.toInt;
-
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.Collections;
-import java.util.List;
-
-import javax.persistence.Column;
-import javax.validation.Valid;
-import javax.validation.constraints.DecimalMax;
-import javax.validation.constraints.DecimalMin;
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
-
-import org.xml.sax.ErrorHandler;
-
 import com.sun.codemodel.JAnnotationArrayMember;
 import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JFieldVar;
@@ -31,23 +13,78 @@ import com.sun.tools.xjc.model.CValuePropertyInfo;
 import com.sun.tools.xjc.outline.ClassOutline;
 import com.sun.tools.xjc.outline.FieldOutline;
 import com.sun.tools.xjc.outline.Outline;
+import com.sun.tools.xjc.reader.xmlschema.bindinfo.BIDeclaration;
+import com.sun.tools.xjc.reader.xmlschema.bindinfo.BIXPluginCustomization;
+import com.sun.tools.xjc.reader.xmlschema.bindinfo.BindInfo;
+import com.sun.xml.xsom.XSAnnotation;
+import com.sun.xml.xsom.XSAttributeDecl;
 import com.sun.xml.xsom.XSComponent;
 import com.sun.xml.xsom.XSElementDecl;
 import com.sun.xml.xsom.XSFacet;
 import com.sun.xml.xsom.XSSimpleType;
 import com.sun.xml.xsom.XSTerm;
 import com.sun.xml.xsom.XSType;
+import com.sun.xml.xsom.impl.AttributeDeclImpl;
 import com.sun.xml.xsom.impl.AttributeUseImpl;
+import com.sun.xml.xsom.impl.ComponentImpl;
 import com.sun.xml.xsom.impl.ElementDecl;
 import com.sun.xml.xsom.impl.ParticleImpl;
 import com.sun.xml.xsom.impl.RestrictionSimpleTypeImpl;
 import com.sun.xml.xsom.impl.parser.DelayedRef;
+import org.xml.sax.ErrorHandler;
+
+import javax.persistence.Column;
+import javax.validation.Valid;
+import javax.validation.constraints.DecimalMax;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+import javax.xml.namespace.QName;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static com.sun.tools.xjc.addon.krasa.Utils.toInt;
 
 /**
  * big thanks to original author: cocorossello
  */
 public class JaxbValidationsPlugins extends Plugin {
-	
+
+    public static enum GlobalMessageCustomization {
+       VALUE,
+       ELEMENT,
+       ATTRIBUTE,
+       TYPE
+    }
+    public static enum MessageTransformation {
+       DEFAULT,
+       LOWER,
+       UPPER,
+       CAMEL
+    }
+    public static class GlobalMessageCustomizationData {
+        public GlobalMessageCustomizationData(MessageTransformation messageTransformation, String pattern) {
+            super();
+            this.messageTransformation = messageTransformation;
+            this.pattern = pattern;
+        }
+        public MessageTransformation getMessageTransformation() {
+            return messageTransformation;
+        }
+        public String getPattern() {
+            return pattern;
+        }
+        private final MessageTransformation messageTransformation;
+        private final String pattern;
+    }
+    private Map<GlobalMessageCustomization, GlobalMessageCustomizationData> globalMessageCustomizationData = null;
+
 	public static final String PLUGIN_OPTION_NAME = "XJsr303Annotations";
 	public static final String TARGET_NAMESPACE_PARAMETER_NAME = PLUGIN_OPTION_NAME + ":targetNamespace";
 	public static final String JSR_349 = PLUGIN_OPTION_NAME + ":JSR_349";
@@ -180,21 +217,31 @@ public class JaxbValidationsPlugins extends Plugin {
 		boolean required = property.isRequired();
 		if (minOccurs < 0 || minOccurs >= 1 && required) {
 			if (!hasAnnotation(field, NotNull.class)) {
-				processNotNull(classOutline, field);
+				processNotNull(particle, property, classOutline, field);
 			}
 		}
 		if (maxOccurs > 1) {
 			if (!hasAnnotation(field, Size.class)) {
 				log("@Size (" + minOccurs + "," + maxOccurs + ") " + propertyName(property)
 						+ " added to class " + classOutline.implClass.name());
-				field.annotate(Size.class).param("min", minOccurs).param("max", maxOccurs);
+				JAnnotationUse jAnnotationUse =
+                        field.annotate(Size.class).param("min", minOccurs).param("max", maxOccurs);
+                String message = findCustomMessage(particle, classOutline, property, Size.class);
+                if(message != null) {
+                    jAnnotationUse.param("message", message);
+                }
 			}
 		}
 		if (maxOccurs == -1 && minOccurs > 0) { // maxOccurs="unbounded"
 			if (!hasAnnotation(field, Size.class)) {
 				log("@Size (" + minOccurs + ") " + propertyName(property) + " added to class "
 						+ classOutline.implClass.name());
-				field.annotate(Size.class).param("min", minOccurs);
+                JAnnotationUse jAnnotationUse =
+                        field.annotate(Size.class).param("min", minOccurs);
+                String message = findCustomMessage(particle, classOutline, property, Size.class);
+                if(message != null) {
+                    jAnnotationUse.param("message", message);
+                }
 			}
 		}
 
@@ -213,32 +260,37 @@ public class JaxbValidationsPlugins extends Plugin {
 		String className = clase.implClass.name();
 		XSType elementType = element.getType();
 
-		validAnnotation(elementType, var, propertyName, className);
+		validAnnotation(element, clase, property, elementType, var, propertyName, className);
 
 		if (elementType instanceof XSSimpleType) {
-			processType((XSSimpleType) elementType, var, propertyName, className);
+			processType(element, clase, property, (XSSimpleType) elementType, var, propertyName, className);
 		} else if (elementType.getBaseType() instanceof XSSimpleType) {
-			processType((XSSimpleType) elementType.getBaseType(), var, propertyName, className);
+			processType(element, clase, property, (XSSimpleType) elementType.getBaseType(), var, propertyName, className);
 		}
 	}
 
-	private void processNotNull(ClassOutline co, JFieldVar field) {
+	private void processNotNull(ComponentImpl component, CPropertyInfo property, ClassOutline co, JFieldVar field) {
 		if (notNullAnnotations) {
 			log("@NotNull: " + field.name() + " added to class " + co.implClass.name());
-			JAnnotationUse annotation = field.annotate(NotNull.class);
-			if (notNullPrefixClassName) {
-				annotation.param("message", String.format("%s.%s {%s.message}", co.implClass.name(), field.name(), NotNull.class.getName()));
-			} else if (notNullPrefixFieldName) {
-				annotation.param("message", String.format("%s {%s.message}", field.name(), NotNull.class.getName()));
-			} else if (notNullCustomMessages) {
-				annotation.param("message", String.format("{%s.message}", NotNull.class.getName()));
-			} else if (notNullCustomMessage != null) {
-				annotation.param("message", notNullCustomMessage.replace("{ClassName}", co.implClass.name()).replace("{FieldName}", field.name()));
-			}
-		}
-	}
+            String message = findCustomMessage(component, co, property, NotNull.class);
+            JAnnotationUse annotation = field.annotate(NotNull.class);
+            if(message == null) {
+                if (notNullPrefixClassName) {
+                    annotation.param("message", String.format("%s.%s {%s.message}", co.implClass.name(), field.name(), NotNull.class.getName()));
+                } else if (notNullPrefixFieldName) {
+                    annotation.param("message", String.format("%s {%s.message}", field.name(), NotNull.class.getName()));
+                } else if (notNullCustomMessages) {
+                    annotation.param("message", String.format("{%s.message}", NotNull.class.getName()));
+                } else if (notNullCustomMessage != null) {
+                    annotation.param("message", notNullCustomMessage.replace("{ClassName}", co.implClass.name()).replace("{FieldName}", field.name()));
+                }
+            } else {
+                annotation.param("message", message);
+            }
+        }
+    }
 
-	private void validAnnotation(final XSType elementType, JFieldVar var, final String propertyName,
+	private void validAnnotation(ComponentImpl component, ClassOutline clase, CPropertyInfo property, final XSType elementType, JFieldVar var, final String propertyName,
 								 final String className) {
 		if ((targetNamespace == null || elementType.getTargetNamespace().startsWith(targetNamespace)) && elementType.isComplexType()) {
 			if (!hasAnnotation(var, Valid.class)) {
@@ -248,7 +300,7 @@ public class JaxbValidationsPlugins extends Plugin {
 		}
 	}
 
-	public void processType(XSSimpleType simpleType, JFieldVar field, String propertyName, String className) {
+	public void processType(ComponentImpl component, ClassOutline clase, CPropertyInfo property, XSSimpleType simpleType, JFieldVar field, String propertyName, String className) {
 		if (!hasAnnotation(field, Size.class) && isSizeAnnotationApplicable(field)) {
 			Integer maxLength = simpleType.getFacet("maxLength") == null ? null : Utils.parseInt(simpleType.getFacet(
 					"maxLength").getValue().value);
@@ -257,21 +309,28 @@ public class JaxbValidationsPlugins extends Plugin {
 			Integer length = simpleType.getFacet("length") == null ? null : Utils.parseInt(simpleType.getFacet(
 					"length").getValue().value);
 
+            JAnnotationUse jAnnotationUse = null;
 			if (maxLength != null && minLength != null) {
 				log("@Size(" + minLength + "," + maxLength + "): " + propertyName + " added to class "
 						+ className);
-				field.annotate(Size.class).param("min", minLength).param("max", maxLength);
+                jAnnotationUse = field.annotate(Size.class).param("min", minLength).param("max", maxLength);
 			} else if (minLength != null) {
 				log("@Size(" + minLength + ", null): " + propertyName + " added to class " + className);
-				field.annotate(Size.class).param("min", minLength);
+                jAnnotationUse = field.annotate(Size.class).param("min", minLength);
 			} else if (maxLength != null) {
 				log("@Size(null, " + maxLength + "): " + propertyName + " added to class " + className);
-				field.annotate(Size.class).param("max", maxLength);
+                jAnnotationUse = field.annotate(Size.class).param("max", maxLength);
 			} else if (length != null) {
 				log("@Size(" + length + "," + length + "): " + propertyName + " added to class "
 						+ className);
-				field.annotate(Size.class).param("min", length).param("max", length);
+                jAnnotationUse = field.annotate(Size.class).param("min", length).param("max", length);
 			}
+            if(jAnnotationUse != null) {
+                String message = findCustomMessage(component, clase, property, Size.class);
+                if(message != null) {
+                    jAnnotationUse.param("message", message);
+                }
+            }
 		}
 		if (jpaAnnotations && isSizeAnnotationApplicable(field)) {
 			Integer maxLength = simpleType.getFacet("maxLength") == null ? null : Utils.parseInt(simpleType.getFacet(
@@ -286,14 +345,24 @@ public class JaxbValidationsPlugins extends Plugin {
 				&& !hasAnnotation(field, DecimalMax.class)) {
 			log("@DecimalMax(" + maxInclusive.getValue().value + "): " + propertyName
 					+ " added to class " + className);
-			field.annotate(DecimalMax.class).param("value", maxInclusive.getValue().value);
+            JAnnotationUse jAnnotationUse =
+                    field.annotate(DecimalMax.class).param("value", maxInclusive.getValue().value);
+	                String message = findCustomMessage(component, clase, property, DecimalMax.class);
+	                if(message != null) {
+	                    jAnnotationUse.param("message", message);
+	                }
 		}
 		XSFacet minInclusive = simpleType.getFacet("minInclusive");
 		if (minInclusive != null && Utils.isNumber(field) && isValidValue(minInclusive)
 				&& !hasAnnotation(field, DecimalMin.class)) {
 			log("@DecimalMin(" + minInclusive.getValue().value + "): " + propertyName
 					+ " added to class " + className);
-			field.annotate(DecimalMin.class).param("value", minInclusive.getValue().value);
+			JAnnotationUse jAnnotationUse =
+                    field.annotate(DecimalMin.class).param("value", minInclusive.getValue().value);
+            String message = findCustomMessage(component, clase, property, DecimalMin.class);
+            if(message != null) {
+                jAnnotationUse.param("message", message);
+            }
 		}
 
 		XSFacet maxExclusive = simpleType.getFacet("maxExclusive");
@@ -310,6 +379,10 @@ public class JaxbValidationsPlugins extends Plugin {
 				log("@DecimalMax(" + value.toString() + "): " + propertyName + " added to class " + className);
 				annotate.param("value", value.toString());
 			}
+            String message = findCustomMessage(component, clase, property, DecimalMax.class);
+            if(message != null) {
+                annotate.param("message", message);
+            }
 		}
 		XSFacet minExclusive = simpleType.getFacet("minExclusive");
 		if (minExclusive != null && Utils.isNumber(field) && isValidValue(minExclusive)
@@ -325,6 +398,10 @@ public class JaxbValidationsPlugins extends Plugin {
 				log("@DecimalMax(" + value.toString() + "): " + propertyName + " added to class " + className);
 				annotate.param("value", value.toString());
 			}
+            String message = findCustomMessage(component, clase, property, DecimalMin.class);
+            if(message != null) {
+                annotate.param("message", message);
+            }
 		}
 
 		if (simpleType.getFacet("totalDigits") != null && Utils.isNumber(field)) {
@@ -337,6 +414,10 @@ public class JaxbValidationsPlugins extends Plugin {
 						+ " added to class " + className);
 				JAnnotationUse annox = field.annotate(Digits.class).param("integer", (totalDigits - fractionDigits));
 				annox.param("fraction", fractionDigits);
+                String message = findCustomMessage(component, clase, property, Digits.class);
+                if(message != null) {
+                    annox.param("message", message);
+                }
 			}
 			if (jpaAnnotations) {
 				field.annotate(Column.class).param("precision", totalDigits).param("scale", fractionDigits);
@@ -357,9 +438,13 @@ public class JaxbValidationsPlugins extends Plugin {
 				for (XSFacet xsFacet : patternList) {
 					final String value = xsFacet.getValue().value;
 					// cxf-codegen fix
-					if (!"\\c+".equals(value)) {
-						listValue.annotate(Pattern.class).param("regexp", replaceXmlProprietals(value));
-					}
+                    if (!"\\c+".equals(value)) {
+                        JAnnotationUse annox = listValue.annotate(Pattern.class).param("regexp", replaceXmlProprietals(value));
+                        String message = findCustomMessage(component, clase, property, Pattern.class);
+                        if(message != null) {
+                            annox.param("message", message);
+                        }
+                    }
 				}
 			}
 		} else if (simpleType.getFacet("pattern") != null) {
@@ -369,7 +454,11 @@ public class JaxbValidationsPlugins extends Plugin {
 				if (!"\\c+".equals(pattern)) {
 					log("@Pattern(" + pattern + "): " + propertyName + " added to class " + className);
 					if (!hasAnnotation(field, Pattern.class)) {
-						field.annotate(Pattern.class).param("regexp", replaceXmlProprietals(pattern));
+                        JAnnotationUse annox = field.annotate(Pattern.class).param("regexp", replaceXmlProprietals(pattern));
+                        String message = findCustomMessage(component, clase, property, Pattern.class);
+                        if(message != null) {
+                            annox.param("message", message);
+                        }
 					}
 				}
 			}
@@ -383,7 +472,11 @@ public class JaxbValidationsPlugins extends Plugin {
 					final String value = xsFacet.getValue().value;
 					// cxf-codegen fix
 					if (!"\\c+".equals(value)) {
-						listValue.annotate(Pattern.class).param("regexp", replaceXmlProprietals(value));
+                        JAnnotationUse annox = listValue.annotate(Pattern.class).param("regexp", replaceXmlProprietals(value));
+                        String message = findCustomMessage(component, clase, property, Pattern.class);
+                        if(message != null) {
+                            annox.param("message", message);
+                        }
 					}
 				}
 			} else if (simpleType.getFacet("enumeration") != null) {
@@ -391,7 +484,11 @@ public class JaxbValidationsPlugins extends Plugin {
 				// cxf-codegen fix
 				if (!"\\c+".equals(pattern)) {
 					log("@Pattern(" + pattern + "): " + propertyName + " added to class " + className);
-					field.annotate(Pattern.class).param("regexp", replaceXmlProprietals(pattern));
+                    JAnnotationUse annox = field.annotate(Pattern.class).param("regexp", replaceXmlProprietals(pattern));
+                    String message = findCustomMessage(component, clase, property, Pattern.class);
+                    if(message != null) {
+                        annox.param("message", message);
+                    }
 				}
 			}
 		}
@@ -427,8 +524,8 @@ public class JaxbValidationsPlugins extends Plugin {
 //			}
 //		}
 
-		validAnnotation(type, var, propertyName, className);
-		processType(type, var, propertyName, className);
+		validAnnotation(particle, clase, property, type, var, propertyName, className);
+		processType(particle, clase, property, type, var, propertyName, className);
 	}
 
 	/**
@@ -447,12 +544,12 @@ public class JaxbValidationsPlugins extends Plugin {
 		JFieldVar var = clase.implClass.fields().get(propertyName);
 		if (particle.isRequired()) {
 			if (!hasAnnotation(var, NotNull.class)) {
-				processNotNull(clase, var);
+				processNotNull(particle, property, clase, var);
 			}
 		}
 
-		validAnnotation(type, var, propertyName, className);
-		processType(type, var, propertyName, className);
+		validAnnotation(particle, clase, property, type, var, propertyName, className);
+		processType(particle, clase, property, type, var, propertyName, className);
 	}
 
 	protected boolean isValidValue(XSFacet facet) {
@@ -479,6 +576,229 @@ public class JaxbValidationsPlugins extends Plugin {
 		return property.getName(false);
 	}
 
+
+    private String findCustomMessage(ComponentImpl component, ClassOutline classOutline, CPropertyInfo property, Class annotationClass) {
+        XSAnnotation annotation = component.getOwnerSchema().getAnnotation();
+        if(annotation != null && globalMessageCustomizationData == null) {
+            // lazy load: need null to initialize only once
+            globalMessageCustomizationData =  new HashMap<GlobalMessageCustomization, GlobalMessageCustomizationData>();
+            BindInfo bindInfo = (BindInfo) annotation.getAnnotation();
+            for (int i = 0; i < bindInfo.size(); i++) {
+                BIDeclaration declaration = bindInfo.get(i);
+                if (declaration instanceof BIXPluginCustomization) {
+                    BIXPluginCustomization bixPluginCustomization = (BIXPluginCustomization) declaration;
+                    QName qName = bixPluginCustomization.getName();
+                    if ("urn:jaxb:krasa".equals(qName.getNamespaceURI()) && "global-message".equals(qName.getLocalPart())) {
+                        GlobalMessageCustomization globalMessageCustomization;
+                        String forAttribute = null;
+                        try {
+                            forAttribute = bixPluginCustomization.element.getAttribute("for");
+                            globalMessageCustomization = GlobalMessageCustomization.valueOf(forAttribute.toUpperCase());
+                        } catch (Throwable t) {
+                            if(forAttribute != null) {
+                                throw new IllegalArgumentException("invalid \"for\" attribute [" + forAttribute + "] in krasa:global-message element: only element, attribute and type allowed");
+                            }
+                            throw new IllegalArgumentException("invalid \"for\" attribute for krasa:global-message element: only element, attribute and type allowed");
+                        }
+                        MessageTransformation messageTransformation;
+                        try {
+                            messageTransformation = MessageTransformation.valueOf(bixPluginCustomization.element.getAttribute("transform").toUpperCase());
+                        } catch (Throwable t) {
+                            messageTransformation = MessageTransformation.DEFAULT;
+                        }
+                        globalMessageCustomizationData.put(
+                                globalMessageCustomization,
+                                new GlobalMessageCustomizationData(
+                                        messageTransformation,
+                                        bixPluginCustomization.element.getAttribute("value")
+                                )
+                        );
+                    }
+                }
+            }
+        }
+        annotation = null;
+        String xsdPropertyName = null, propertyName = null;
+        GlobalMessageCustomizationData globalCustomizationData = null;
+        if(component instanceof ElementDecl) {
+            ElementDecl elementDecl = ElementDecl.class.cast(component);
+            propertyName = propertyName(CElementPropertyInfo.class.cast(property));
+            xsdPropertyName = elementDecl.getName();
+            globalCustomizationData =
+                    globalMessageCustomizationData != null ?
+                            globalMessageCustomizationData.get(GlobalMessageCustomization.ELEMENT):
+                            null;
+            annotation = elementDecl.getAnnotation();
+        } else if(component instanceof ParticleImpl) {
+            ParticleImpl particle = ParticleImpl.class.cast(component);
+            XSTerm xsTerm = particle.getTerm();
+            if(xsTerm != null) {
+                propertyName = propertyName(CElementPropertyInfo.class.cast(property));
+                xsdPropertyName = ElementDecl.class.cast(xsTerm).getName();
+                globalCustomizationData =
+                        globalMessageCustomizationData != null ?
+                                globalMessageCustomizationData.get(GlobalMessageCustomization.ELEMENT):
+                                null;
+                annotation = xsTerm.getAnnotation();
+            }
+        } else if(component instanceof AttributeUseImpl) {
+            AttributeUseImpl attributeUse = AttributeUseImpl.class.cast(component);
+            XSAttributeDecl xsAttributeDecl = attributeUse.getDecl();
+            if(xsAttributeDecl != null) {
+                propertyName = CAttributePropertyInfo.class.cast(property).getName(false);
+                xsdPropertyName = AttributeDeclImpl.class.cast(xsAttributeDecl).getName();
+                globalCustomizationData =
+                        globalMessageCustomizationData != null ?
+                                globalMessageCustomizationData.get(GlobalMessageCustomization.ATTRIBUTE):
+                                null;
+                annotation = xsAttributeDecl.getAnnotation();
+            }
+        } else if(component instanceof RestrictionSimpleTypeImpl) {
+            RestrictionSimpleTypeImpl restrictionSimpleType = RestrictionSimpleTypeImpl.class.cast(component);
+            propertyName = CValuePropertyInfo.class.cast(property).getName(false);
+            XSType xsType = restrictionSimpleType.getBaseType();
+            if(xsType != null) {
+                xsdPropertyName = propertyName;
+                globalCustomizationData =
+                        globalMessageCustomizationData != null ?
+                                globalMessageCustomizationData.get(GlobalMessageCustomization.VALUE):
+                                null;
+                annotation = xsType.getAnnotation();
+            }
+        }
+        String simpleClassName = classOutline.implClass.name(),
+                className = classOutline.implClass.fullName(),
+                annotationName = annotationClass.getSimpleName();
+        if(xsdPropertyName == null) {
+            xsdPropertyName = propertyName;
+        }
+        if (annotation != null) {
+            BindInfo bindInfo = (BindInfo) annotation.getAnnotation();
+            if (bindInfo != null && bindInfo.size() > 0) {
+                for (int i = 0; i < bindInfo.size(); i++) {
+                    BIDeclaration declaration = bindInfo.get(i);
+                    if (declaration instanceof BIXPluginCustomization) {
+                        BIXPluginCustomization bixPluginCustomization = (BIXPluginCustomization) declaration;
+                        QName qName = bixPluginCustomization.getName();
+                        if ("urn:jaxb:krasa".equals(qName.getNamespaceURI()) && "message".equals(qName.getLocalPart())) {
+                            MessageTransformation messageTransformation;
+                            try {
+                                messageTransformation = MessageTransformation.valueOf(bixPluginCustomization.element.getAttribute("transform").toUpperCase());
+                            } catch (Throwable t) {
+                                messageTransformation = MessageTransformation.DEFAULT;
+                            }
+                            String patternString = bixPluginCustomization.element.getAttribute("value");
+                            if (patternString != null && patternString.trim().length() > 0) {
+                                return buildMessageCustomization(
+                                        messageTransformation,
+                                        patternString,
+                                        simpleClassName,
+                                        className,
+                                        propertyName,
+                                        xsdPropertyName,
+                                        annotationName
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return buildMessageCustomization(
+                globalCustomizationData,
+                simpleClassName,
+                className,
+                propertyName,
+                xsdPropertyName,
+                annotationName
+        );
+    }
+
+    private String buildMessageCustomization(
+            GlobalMessageCustomizationData globalMessageCustomizationData,
+            String simpleClassName,
+            String className,
+            String propertyName,
+            String xsdPropertyName,
+            String annotationName
+    ) {
+        return globalMessageCustomizationData != null ?
+                buildMessageCustomization(
+                        globalMessageCustomizationData.getMessageTransformation(),
+                        globalMessageCustomizationData.getPattern(),
+                        simpleClassName,
+                        className,
+                        propertyName,
+                        xsdPropertyName,
+                        annotationName
+                ): null;
+    }
+    private String buildMessageCustomization(
+            MessageTransformation messageTransformation,
+            String pattern,
+            String simpleClassName,
+            String className,
+            String propertyName,
+            String xsdPropertyName,
+            String annotationName
+    ) {
+        String message;
+        if(xsdPropertyName == null) {
+            xsdPropertyName = propertyName;
+        }
+        if(MessageTransformation.CAMEL.equals(messageTransformation)) {
+            message = pattern.replaceAll(
+                    "\\$\\{SimpleClassName}",
+                    simpleClassName.length() > 1 ?
+                            simpleClassName.substring(0, 1).toLowerCase() + simpleClassName.substring(1) :
+                            simpleClassName.toLowerCase()
+            ).replaceAll(
+                    "\\$\\{ClassName}",
+                    className
+            ).replaceAll(
+                    "\\$\\{FieldName}",
+                    propertyName.length() > 1 ?
+                            propertyName.substring(0, 1).toLowerCase() + propertyName.substring(1) :
+                            propertyName.toLowerCase()
+            ).replaceAll(
+                    "\\$\\{XsdFieldName}",
+                    xsdPropertyName.length() > 1 ?
+                            xsdPropertyName.substring(0, 1).toLowerCase() + xsdPropertyName.substring(1) :
+                            xsdPropertyName.toLowerCase()
+            ).replaceAll(
+                    "\\$\\{AnnotationName}",
+                    annotationName.length() > 1 ?
+                            annotationName.substring(0, 1).toLowerCase() + annotationName.substring(1) :
+                            annotationName.toLowerCase()
+            );
+        } else {
+            message = pattern.replaceAll(
+                    "\\$\\{SimpleClassName}",
+                    simpleClassName
+            ).replaceAll(
+                    "\\$\\{ClassName}",
+                    className
+            ).replaceAll(
+                    "\\$\\{FieldName}",
+                    propertyName
+            ).replaceAll(
+                    "\\$\\{XsdFieldName}",
+                    xsdPropertyName
+            ).replaceAll(
+                    "\\$\\{AnnotationName}",
+                    annotationName
+            );
+            switch (messageTransformation) {
+                case LOWER:
+                    message = message.toLowerCase();
+                    break;
+                case UPPER:
+                    message = message.toUpperCase();
+                    break;
+            }
+        }
+        return message;
+    }
 
 	private void log(Exception e) {
 		e.printStackTrace();
