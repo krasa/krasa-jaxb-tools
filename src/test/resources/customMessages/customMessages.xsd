@@ -22,9 +22,6 @@
             - value:     apply to all simple types.
             - element:   apply to all xsd:elements: you can use any of the 5 pseudo-variables described below.
             - attribute: apply to any attribute: you can use any of the 5 pseudo-variables described below.
-            - type:      apply only to xsd:complexType (that is, when Valid annotation is present): only
-                         ${SimpleClassName}, ${ClassName} and ${AnnotationName} can be used (no error if provided
-                         but will not be replaced).
             All these values are case insensitive, so you can configure for example "ELEMENT" or "eLeMeNt".
 
             The "for" attribute must be present with one of the defined values, otherwise an exception will be thrown.

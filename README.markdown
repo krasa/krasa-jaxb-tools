@@ -12,7 +12,7 @@ Actual Release:
 <dependency>
     <groupId>com.github.krasa</groupId>
     <artifactId>krasa-jaxb-tools</artifactId>
-    <version>1.3</version>
+    <version>1.3.1</version>
 </dependency>
 ```
 Snapshot:
@@ -60,6 +60,48 @@ Generates:
 * `FieldName` (field name is prefixed to the default message: **"field {javax....message}"**)
 * `ClassName` (class and field name are prefixed to the default message: **"Class.field {javax....message}"**)
 * `other-non-empty-text` (arbitrary message, with substitutable, case-sensitive parameters `{ClassName}` and `{FieldName}`: **"Class {ClassName} field {FieldName} non-null"**)
+
+
+----------------
+
+Customization for all messages: globally and per XSD element (element, attribute or complextType).
+You only need to add `urn:jaxb:krasa` namespace to `xsd:scheme` or to `jaxb:bindings` definition
+and use `{urn:jaxb:krasa}:global-message` and `{urn:jaxb:krasa}:message` elements to customize
+your XSD with `xsd:appinfo` or `jaxb:bindings` for external binding.
+
+To configure globally message customization, you must use `{urn:jaxb:krasa}:global-message` element. 
+You need then configure the "for" attribute with one of these values:
+* **value**    : apply to all simple types.
+* **element**  : apply to all xsd:elements: you can use any of the 5 pseudo-variables described below.
+* **attribute**: apply to any attribute: you can use any of the 5 pseudo-variables described below.
+
+All these values are case insensitive, so you can configure for example "ELEMENT" or "eLeMeNt".
+The `for` attribute must be present with one of the defined values, otherwise an exception will be thrown.
+
+Of course, if you do not add global message customization, all elements without `{urn:jaxb:krasa}:message`
+element will remain unchanged or with the default behaviour (@NotNull).
+
+Each JSR303/JSR349 annotation added to any element/attribute will be customized with the same expression
+included in `{urn:jaxb:krasa}:message` element.
+
+You can customize the message using the following pseudo-variables:
+* **${SimpleClassName}**: will be replaced by getClass().getSimpleName(): class enclosing the field.
+* **${ClassName}**      : will be replaced by getClass().getName(): class enclosing the field.
+* **${FieldName}**      : will be replaced by the name of the field.
+* **${XsdFieldName}**   : will be replaced by the name of the element or attribute in the XSD.
+* **${AnnotationName}** : will be replaced by getClass().getSimpleName().
+
+All these pseudo-variables are case sensitive.
+
+The message can be also customized, it can be transformed using `transform` attribute:
+* **literal**: the message will not be changed (default).
+* **lower**  : message.toLowerCase().
+* **upper**  : message.toUpperCase().
+* **camel**  : first char of **${SimpleClassName}**, **${FieldName}**, **${XsdFieldName}** and **${AnnotationName}**
+               replacements will be replaced by its lower-case.
+             
+All these values are case insensitive, so you can configure for example "LOWER" or "LoWeR".
+
 
 ---- 
 XReplacePrimitives

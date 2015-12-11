@@ -59,8 +59,7 @@ public class JaxbValidationsPlugins extends Plugin {
     public static enum GlobalMessageCustomization {
        VALUE,
        ELEMENT,
-       ATTRIBUTE,
-       TYPE
+       ATTRIBUTE
     }
     public static enum MessageTransformation {
        DEFAULT,
