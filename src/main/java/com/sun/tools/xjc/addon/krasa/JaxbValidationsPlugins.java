@@ -605,13 +605,16 @@ public class JaxbValidationsPlugins extends Plugin {
                         } catch (Throwable t) {
                             messageTransformation = MessageTransformation.DEFAULT;
                         }
-                        globalMessageCustomizationData.put(
-                                globalMessageCustomization,
-                                new GlobalMessageCustomizationData(
-                                        messageTransformation,
-                                        bixPluginCustomization.element.getAttribute("value")
-                                )
-                        );
+                        String value = bixPluginCustomization.element.getAttribute("value");
+                        if(value != null && value.trim().length() > 0) {
+                            globalMessageCustomizationData.put(
+                                    globalMessageCustomization,
+                                    new GlobalMessageCustomizationData(
+                                            messageTransformation,
+                                            value.trim()
+                                    )
+                            );
+                        }
                     }
                 }
             }
@@ -690,7 +693,7 @@ public class JaxbValidationsPlugins extends Plugin {
                             if (patternString != null && patternString.trim().length() > 0) {
                                 return buildMessageCustomization(
                                         messageTransformation,
-                                        patternString,
+                                        patternString.trim(),
                                         simpleClassName,
                                         className,
                                         propertyName,
