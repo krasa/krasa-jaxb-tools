@@ -1,0 +1,240 @@
+<xsd:schema
+		xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+		targetNamespace="a"
+        xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+        xmlns:krasa="urn:jaxb:krasa"
+        jaxb:version="2.0"
+		xmlns:a="a"
+		elementFormDefault="qualified">
+
+    <xsd:annotation>
+        <xsd:documentation>
+
+            This is an example mixing JAXB customization with JSR303/JSR349 message customization.
+            Do not include krasa namespace (urn:jaxb:krasa) in the jaxb:extensionBindingPrefixes attribute.
+
+            If you do not want to apply JAXB customization, just remove xmlns:jaxb and jaxb:* attributes
+            from xsd:schema declaration.
+
+            You can define globally the message customization and override it for each field. To configure globally
+            message customization, you must use krasa:global-message element. You need then configure the "for" attribute
+            with one of these values:
+            - value:     apply to all simple types.
+            - element:   apply to all xsd:elements: you can use any of the 5 pseudo-variables described below.
+            - attribute: apply to any attribute: you can use any of the 5 pseudo-variables described below.
+            All these values are case insensitive, so you can configure for example "ELEMENT" or "eLeMeNt".
+
+            The "for" attribute must be present with one of the defined values, otherwise an exception will be thrown.
+
+            Of course, if you do not add global message customization, all elements without krasa:message
+            element will remain unchanged or with the default behaviour.
+
+            Each JSR303/JSR349 annotation added to any element/attribute will be customized with the same expression
+            included in krasa:message element.
+
+            You can customize the message using the following pseudo-variables:
+            - ${SimpleClassName}: will be replaced by getClass().getSimpleName(): class enclosing the field.
+            - ${ClassName}:       will be replaced by getClass().getName(): class enclosing the field.
+            - ${FieldName}:       will be replaced by the name of the field.
+            - ${XsdFieldName}:    will be replaced by the name of the element or attribute in the XSD.
+            - ${AnnotationName}:  will be replaced by getClass().getSimpleName().
+            All these pseudo-variables are case sensitive.
+
+            The message can be also customized, it can be transformed using "transform" attribute:
+            - literal: the message will not be changed (default).
+            - lower:   message.toLowerCase().
+            - upper:   message.toUpperCase().
+            - camel:   first char of ${SimpleClassName}, ${FieldName}, ${XsdFieldName} and ${AnnotationName}
+                       replacements will be replaced by its lower-case.
+            All these values are case insensitive, so you can configure for example "LOWER" or "LoWeR".
+
+        </xsd:documentation>
+        <xsd:appinfo>
+            <krasa:global-message for="value" transform="lower" value="${SimpleClassName}.${FieldName}.${AnnotationName}.message"/>
+            <krasa:global-message for="element" transform="camel" value="${SimpleClassName}.${FieldName}.${AnnotationName}.message"/>
+            <krasa:global-message for="attribute" transform="upper" value="${SimpleClassName}.${XsdFieldName}.${AnnotationName}.message"/>
+            <krasa:global-message for="type" transform="camel" value="${SimpleClassName}.${AnnotationName}.message"/>
+        </xsd:appinfo>
+    </xsd:annotation>
+
+	<xsd:element name="main" type="a:Main"/>
+
+    <xsd:simpleType name="ArrayOfBytes">
+   		<xsd:restriction base="xsd:hexBinary">
+   			<xsd:maxLength value="18"/>
+   		</xsd:restriction>
+   	</xsd:simpleType>
+
+    <xsd:simpleType name="Number">
+  		<xsd:restriction base="xsd:string">
+  			<xsd:minLength value="1"/>
+  			<xsd:maxLength value="5"/>
+  		</xsd:restriction>
+  	</xsd:simpleType>
+
+  	<xsd:complexType name="NumberWithCode">
+        <xsd:annotation>
+            <xsd:documentation>
+
+                The result for this attribute will be (from krasa:global-message for="value"):
+
+                    @XmlValue
+                    @Size(min = 1, max = 5, message = "numberwithcode.value.size.message")
+                    protected String value;
+
+            </xsd:documentation>
+        </xsd:annotation>
+  		<xsd:simpleContent>
+  			<xsd:extension base="a:Number">
+  				<xsd:attribute name="code" type="xsd:string" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation>
+
+                            The result for this attribute will be (from krasa:global-message for="attribute"):
+
+                                @XmlAttribute(name = "code", required = true)
+                                @NotNull(message = "NUMBERWITHCODE.CODE.NOTNULL.MESSAGE")
+                                protected String value;
+
+                        </xsd:documentation>
+                    </xsd:annotation>
+  				</xsd:attribute>
+  			</xsd:extension>
+  		</xsd:simpleContent>
+  	</xsd:complexType>
+
+	<xsd:complexType name="Main">
+		<xsd:sequence>
+			<xsd:element name="notNullString" type="xsd:string">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <jaxb:property name="notNullString0WithCustomMessage"/>
+                    </xsd:appinfo>
+                    <xsd:documentation>
+
+                        The result for this element will be (from krasa:global-message for="element"):
+
+                            @XmlElement(name = "notNullString", required = true)
+                            @NotNull(message = "main.notNullStringWithCustomMessage.notNull.message")
+                            protected String notNullStringWithCustomMessage;
+
+                    </xsd:documentation>
+                </xsd:annotation>
+			</xsd:element>
+			<xsd:element name="notNullStringList" type="xsd:string" maxOccurs="5">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <jaxb:property name="notNullStringListWithCustomMessage"/>
+                        <krasa:message value="${ClassName}.${FieldName}.${AnnotationName}.message"/>
+                    </xsd:appinfo>
+                    <xsd:documentation>
+
+                        The result for this element will be:
+
+                            @XmlElement(name = "notNullStringList", required = true)
+                            @NotNull(message = "a.Main.notNullStringListWithCustomMessage.NotNull.message")
+                            @Size(min = 1, max = 5, message = "a.Main.notNullStringListWithCustomMessage.Size.message")
+                            protected List&lt;String> notNullStringListWithCustomMessage;
+
+                    </xsd:documentation>
+                </xsd:annotation>
+			</xsd:element>
+            <xsd:element maxOccurs="1" minOccurs="0" name="NumberWithCode" type="a:NumberWithCode">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <krasa:message value="${ClassName}.${XsdFieldName}.${AnnotationName}.message"/>
+                    </xsd:appinfo>
+                    <xsd:documentation>
+
+                        The result for this element will be:
+
+                            @XmlElement(name = "NumberWithCode")
+                            @Valid(message = "a.Main.NumberWithCode.Valid.message")
+                            protected NumberWithCode numberWithCode;
+
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element maxOccurs="5" minOccurs="0" name="otherNumberWithCode" type="a:NumberWithCode">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <krasa:message value="${ClassName}.${FieldName}.${AnnotationName}.message"/>
+                    </xsd:appinfo>
+                    <xsd:documentation>
+
+                        The result for this element will be:
+
+                            @Size(min = 0, max = 5, message = "a.Main.otherNumberWithCode.Size.message")
+                            @Valid(message = "a.Main.otherNumberWithCode.Valid.message")
+                            protected List&lt;NumberWithCode> otherNumberWithCode;
+
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="arrayOfBytes" type="a:ArrayOfBytes">
+                <xsd:annotation>
+                    <xsd:documentation>
+
+                        The result for this element will be (from krasa:global-message for="element"):
+
+                            @XmlElement(required = true, type = String.class)
+                            @XmlJavaTypeAdapter(HexBinaryAdapter.class)
+                            @NotNull(message = "main.arrayOfBytes.notNull.message")
+                            @Size(max = 18, message = "main.arrayOfBytes.size.message")
+                            protected byte[] arrayOfBytes;
+
+
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+		</xsd:sequence>
+        <xsd:attribute name="nameAttribute" type="xsd:string" use="required">
+            <xsd:annotation>
+                <xsd:appinfo>
+                    <jaxb:property name="name"/>
+                    <krasa:message value="${ClassName}.${XsdFieldName}.${AnnotationName}.message"/>
+                </xsd:appinfo>
+                <xsd:documentation>
+
+                    The result for this attribute will be:
+
+                        @XmlAttribute(name = "nameAttribute", required = true)
+                        @NotNull(message = "a.Main.nameAttribute.NotNull.message")
+                        protected String name;
+
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="descriptionAttribute" type="xsd:string" use="required">
+            <xsd:annotation>
+                <xsd:appinfo>
+                    <jaxb:property name="description"/>
+                    <krasa:message transform="camel" value="${SimpleClassName}.${XsdFieldName}.${AnnotationName}.message"/>
+                </xsd:appinfo>
+                <xsd:documentation>
+
+                    The result for this attribute will be:
+
+                        @XmlAttribute(name = "descriptionAttribute", required = true)
+                        @NotNull(message = "main.descriptionAttribute.notNull.message")
+                        protected String description;
+
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="contentAttribute" type="xsd:string" use="required">
+            <xsd:annotation>
+                <xsd:documentation>
+
+                    The result for this attribute will be (from krasa:global-message for="attribute"):
+
+                        @XmlAttribute(name = "contentAttribute", required = true)
+                        @NotNull(message = "MAIN.CONTENTATTRIBUTE.NOTNULL.MESSAGE")
+                        protected String contentAttribute;
+
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+	</xsd:complexType>
+
+</xsd:schema>
