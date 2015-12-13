@@ -1,0 +1,15 @@
+<xsd:schema
+		xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+		targetNamespace="a"
+		xmlns:a="a"
+		elementFormDefault="qualified">
+
+	<xsd:element name="main" type="a:Main"/>
+
+	<xsd:complexType name="Main">
+		<xsd:sequence>
+			<xsd:element minOccurs="1" maxOccurs="1" nillable="true" name="notNullString" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+</xsd:schema>
