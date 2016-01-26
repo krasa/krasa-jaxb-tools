@@ -344,7 +344,7 @@ public class JaxbValidationsPlugins extends Plugin {
 			if (!hasAnnotation(field, Digits.class)) {
 				log("@Digits(" + totalDigits + "," + fractionDigits + "): " + propertyName
 						+ " added to class " + className);
-				JAnnotationUse annox = field.annotate(Digits.class).param("integer", (totalDigits - fractionDigits));
+				JAnnotationUse annox = field.annotate(Digits.class).param("integer", totalDigits);
 				annox.param("fraction", fractionDigits);
 			}
 			if (jpaAnnotations) {
