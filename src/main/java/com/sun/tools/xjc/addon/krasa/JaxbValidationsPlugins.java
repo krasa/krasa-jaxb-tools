@@ -103,7 +103,7 @@ public class JaxbValidationsPlugins extends Plugin {
 					notNullCustomMessages = notNullPrefixFieldName = notNullPrefixClassName = true;
 				} else if (value.equalsIgnoreCase("fieldname")) {
 					notNullCustomMessages = notNullPrefixFieldName = true;
-				} else if (!value.isEmpty() && !value.equalsIgnoreCase("false")) {
+				} else if (value.length() != 0 && !value.equalsIgnoreCase("false")) {
 					notNullCustomMessage = value;
 				}
 			}
