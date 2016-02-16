@@ -385,16 +385,18 @@ public class JaxbValidationsPlugins extends Plugin {
 		} else if ("String".equals(field.type().name())) {
 			final List<XSFacet> enumerationList = simpleType.getFacets("enumeration");
 			if (enumerationList.size() > 1) { // More than one pattern
-				log("@Pattern.List: " + propertyName + " added to class " + className);
-				final JAnnotationUse patternListAnnotation = field.annotate(Pattern.List.class);
-				final JAnnotationArrayMember listValue = patternListAnnotation.paramArray("value");
+				log("@Pattern: " + propertyName + " added to class " + className);
+				final JAnnotationUse patternListAnnotation = field.annotate(Pattern.class);
+				StringBuilder sb=new StringBuilder();
 				for (XSFacet xsFacet : enumerationList) {
 					final String value = xsFacet.getValue().value;
 					// cxf-codegen fix
 					if (!"\\c+".equals(value)) {
-						listValue.annotate(Pattern.class).param("regexp", replaceXmlProprietals(value));
+						sb.append("(").append(replaceXmlProprietals(value)).append(")|");
 					}
 				}
+				String regex=sb.toString();
+				patternListAnnotation.param("regexp", regex.substring(0,regex.length()-1));
 			} else if (simpleType.getFacet("enumeration") != null) {
 				final String pattern = simpleType.getFacet("enumeration").getValue().value;
 				// cxf-codegen fix
