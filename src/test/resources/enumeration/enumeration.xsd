@@ -1,0 +1,41 @@
+<xsd:schema
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="a"
+        xmlns:a="a"
+        elementFormDefault="qualified">
+
+    <xsd:element name="naturalPerson">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="title" nillable="true" minOccurs="0">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:maxLength value="50"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:element>
+                <xsd:element name="sex" minOccurs="0">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="f"/>
+                            <xsd:enumeration value="m"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:element>
+                <xsd:element name="firstname" minOccurs="0">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:enumeration value="00"/>
+                            <xsd:enumeration value="04"/>
+                            <xsd:enumeration value="08"/>
+                            <xsd:enumeration value="12"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:element>
+
+            </xsd:sequence>
+
+        </xsd:complexType>
+    </xsd:element>
+
+</xsd:schema>
