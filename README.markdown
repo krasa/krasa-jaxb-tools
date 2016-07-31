@@ -1,3 +1,4 @@
+>NOTE: I no longer use this plugin so I won't make any fixes, but if you make a pull request, I will merge it and realese it.
 
 Contains:
 ----------------
