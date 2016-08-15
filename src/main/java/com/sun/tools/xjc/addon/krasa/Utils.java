@@ -1,10 +1,12 @@
 package com.sun.tools.xjc.addon.krasa;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.math.BigInteger;
 
+import com.sun.codemodel.JAnnotationUse;
+import com.sun.codemodel.JClass;
 import com.sun.codemodel.JFieldVar;
-import com.sun.codemodel.JType;
 
 /**
  * @author Vojtech Krasa
@@ -12,6 +14,12 @@ import com.sun.codemodel.JType;
 public class Utils {
 	public static final String[] NUMBERS = new String[]{"BigDecimal", "BigInteger", "String", "byte", "short", "int",
 			"long"};
+
+	public static JAnnotationUse fieldAnnotate(final JFieldVar jfv, final Class <? extends Annotation> c, final String propName) {
+		return
+			jfv.annotate(c)
+				.param("message", propName + ": {javax.validation.constraints." + c.getSimpleName() + ".message}");		
+	}
 
 	public static int toInt(Object maxOccurs) {
 		if (maxOccurs instanceof BigInteger) {
