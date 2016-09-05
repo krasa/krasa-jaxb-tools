@@ -249,7 +249,8 @@ public class JaxbValidationsPlugins extends Plugin {
 
 	private void validAnnotation(final XSType elementType, JFieldVar var, final String propertyName,
 								 final String className) {
-		if ((targetNamespace == null || elementType.getTargetNamespace().startsWith(targetNamespace)) && elementType.isComplexType()) {
+		if ((targetNamespace == null || elementType.getTargetNamespace().startsWith(targetNamespace)) &&
+                (elementType.isComplexType() || Utils.isCustomType(var))) {
 			if (!hasAnnotation(var, Valid.class)) {
 				log("@Valid: " + propertyName + " added to class " + className);
 				var.annotate(Valid.class);
@@ -257,7 +258,7 @@ public class JaxbValidationsPlugins extends Plugin {
 		}
 	}
 
-	public void processType(XSSimpleType simpleType, JFieldVar field, String propertyName, String className) {
+    public void processType(XSSimpleType simpleType, JFieldVar field, String propertyName, String className) {
 		if (!hasAnnotation(field, Size.class) && isSizeAnnotationApplicable(field)) {
 			Integer maxLength = simpleType.getFacet("maxLength") == null ? null : Utils.parseInt(simpleType.getFacet(
 					"maxLength").getValue().value);
