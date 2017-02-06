@@ -55,6 +55,7 @@ public class JaxbValidationsPlugins extends Plugin {
 	public static final String NOT_NULL_ANNOTATIONS_CUSTOM_MESSAGES = PLUGIN_OPTION_NAME + ":notNullAnnotationsCustomMessages";
 	public static final String VERBOSE = PLUGIN_OPTION_NAME + ":verbose";
 	public static final String GENERATE_JPA_ANNOTATIONS = PLUGIN_OPTION_NAME + ":jpa";
+	public static final String GENERATE_VALIDATION_ANNOTATIONS = PLUGIN_OPTION_NAME + ":generateValidationAnnotations";
 
 	protected String namespace = "http://jaxb.dev.java.net/plugin/code-injector";
 	public String targetNamespace = null;
@@ -66,6 +67,7 @@ public class JaxbValidationsPlugins extends Plugin {
 	public boolean notNullPrefixClassName;
 	public String notNullCustomMessage = null;
 	public boolean jpaAnnotations = false;
+	public String validationAnnotations = null;
 
 	public String getOptionName() {
 		return PLUGIN_OPTION_NAME;
@@ -120,6 +122,13 @@ public class JaxbValidationsPlugins extends Plugin {
 		if (index_generateJpaAnnotations > 0) {
 			jpaAnnotations = Boolean.parseBoolean(arg1.substring(index_generateJpaAnnotations
 					+ GENERATE_JPA_ANNOTATIONS.length() + "=".length()));
+			consumed++;
+		}
+
+		int index_validationAnnotation = arg1.indexOf(GENERATE_VALIDATION_ANNOTATIONS);
+		if (index_validationAnnotation > 0) {
+			validationAnnotations = arg1.substring(index_validationAnnotation
+					+ GENERATE_VALIDATION_ANNOTATIONS.length() + "=".length()).trim();
 			consumed++;
 		}
 

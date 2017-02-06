@@ -54,6 +54,7 @@
 		<maven-compiler-plugin.version>2.5.1</maven-compiler-plugin.version>
 		<maven-surefire-plugin.version>2.14.1</maven-surefire-plugin.version>
 		<javax-persistence.version>2.1.0</javax-persistence.version>
+        <cxf.version>2.2.3</cxf.version>
 	</properties>
 
 	<build>
@@ -111,6 +112,11 @@
 			<artifactId>validation-api</artifactId>
 			<version>${validation-api.version}</version>
 		</dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-codegen-plugin</artifactId>
+            <version>${cxf.version}</version>
+        </dependency>
 
 
 		<dependency>

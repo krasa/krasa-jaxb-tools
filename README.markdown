@@ -22,7 +22,7 @@ Snapshot:
 <dependency>
     <groupId>com.github.krasa</groupId>
     <artifactId>krasa-jaxb-tools</artifactId>
-    <version>1.3-SNAPSHOT</version>
+    <version>1.6-SNAPSHOT</version>
 </dependency>
 
 <repository>
@@ -62,6 +62,15 @@ Generates:
 * `ClassName` (class and field name are prefixed to the default message: **"Class.field {javax....message}"**)
 * `other-non-empty-text` (arbitrary message, with substitutable, case-sensitive parameters `{ClassName}` and `{FieldName}`: **"Class {ClassName} field {FieldName} non-null"**)
 
+----------------
+
+Bean validation policy can be customized with **-XJsr303Annotations:generateValidationAnnotations=OPTION** where **OPTION** is one of the following:
+* `InOut` (default: validate requests and responses)
+* `In` (validate only requests)
+* `Out` (validate only responses)
+
+**Using this option requires to specify krasa as front end generator** (See example below)
+
 ---- 
 XReplacePrimitives
 ----------------
@@ -100,6 +109,10 @@ Usage:
                             <extraarg>-xjc-XJsr303Annotations:notNullAnnotationsCustomMessages=false</extraarg>
                             <extraarg>-xjc-XJsr303Annotations:JSR_349=false</extraarg>
                             <extraarg>-xjc-XJsr303Annotations:verbose=false</extraarg>
+                            <!--optional Only needed for generateValidationAnnotations, which possible values are InOut (default), In, Out -->
+                            <extraarg>-fe</extraarg>
+                            <extraarg>krasa</extraarg>
+                            <extraarg>-xjc-XJsr303Annotations:generateValidationAnnotations=In</extraarg>
                         </extraargs>
                     </wsdlOption>
                 </wsdlOptions>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin xmlns="http://cxf.apache.org/tools/plugin" name="krasa-jaxb-tool" version="" provider="krasa.addon.xjc.tools.sun.com">
+    <frontend name="krasa" package="org.apache.cxf.tools.wsdlto.frontend.jaxws" profile="JAXWSProfile">
+        <container name="JAXWSContainer" package="org.apache.cxf.tools.wsdlto.frontend.jaxws" toolspec="jaxws-toolspec.xml" />
+        <processor name="WSDLToJavaProcessor" package="org.apache.cxf.tools.wsdlto.frontend.jaxws.processor" />
+        <builder name="JAXWSDefinitionBuilder" package="org.apache.cxf.tools.wsdlto.frontend.jaxws.wsdl11" />
+        <generators package="com.sun.tools.xjc.addon.krasa">
+            <generator name="ValidSEIGenerator" />
+        </generators>
+    </frontend>
+</plugin>
