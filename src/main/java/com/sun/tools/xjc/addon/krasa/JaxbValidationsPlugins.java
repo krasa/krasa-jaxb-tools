@@ -18,7 +18,6 @@ import javax.validation.constraints.Size;
 
 import org.xml.sax.ErrorHandler;
 
-import com.sun.codemodel.JAnnotationArrayMember;
 import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JFieldVar;
 import com.sun.tools.xjc.BadCommandLineException;
@@ -359,18 +358,18 @@ public class JaxbValidationsPlugins extends Plugin {
 		 */
 		List<XSFacet> patternList = simpleType.getFacets("pattern");
 		if (patternList.size() > 1) { // More than one pattern
-			log("@Pattern.List: " + propertyName + " added to class " + className);
-			JAnnotationUse patternListAnnotation = field.annotate(Pattern.List.class);
-			JAnnotationArrayMember listValue = patternListAnnotation.paramArray("value");
-
 			if ("String".equals(field.type().name())) {
+				log("@Pattern: " + propertyName + " added to class " + className);
+				final JAnnotationUse patternAnnotation = field.annotate(Pattern.class);
+				StringBuilder sb = new StringBuilder();
 				for (XSFacet xsFacet : patternList) {
 					final String value = xsFacet.getValue().value;
 					// cxf-codegen fix
 					if (!"\\c+".equals(value)) {
-						listValue.annotate(Pattern.class).param("regexp", replaceXmlProprietals(value));
+						sb.append("(").append(replaceXmlProprietals(value)).append(")|");
 					}
 				}
+				patternAnnotation.param("regexp", sb.substring(0, sb.length()-1));
 			}
 		} else if (simpleType.getFacet("pattern") != null) {
 			String pattern = simpleType.getFacet("pattern").getValue().value;
@@ -388,7 +387,7 @@ public class JaxbValidationsPlugins extends Plugin {
 			if (enumerationList.size() > 1) { // More than one pattern
 				log("@Pattern: " + propertyName + " added to class " + className);
 				final JAnnotationUse patternListAnnotation = field.annotate(Pattern.class);
-				StringBuilder sb=new StringBuilder();
+				StringBuilder sb = new StringBuilder();
 				for (XSFacet xsFacet : enumerationList) {
 					final String value = xsFacet.getValue().value;
 					// cxf-codegen fix
@@ -396,8 +395,7 @@ public class JaxbValidationsPlugins extends Plugin {
 						sb.append("(").append(replaceXmlProprietals(value)).append(")|");
 					}
 				}
-				String regex=sb.toString();
-				patternListAnnotation.param("regexp", regex.substring(0,regex.length()-1));
+				patternListAnnotation.param("regexp", sb.substring(0, sb.length()-1));
 			} else if (simpleType.getFacet("enumeration") != null) {
 				final String pattern = simpleType.getFacet("enumeration").getValue().value;
 				// cxf-codegen fix
