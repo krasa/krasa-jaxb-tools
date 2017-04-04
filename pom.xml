@@ -10,7 +10,7 @@
 
 	<groupId>com.github.krasa</groupId>
 	<artifactId>krasa-jaxb-tools</artifactId>
-	<version>1.2-SNAPSHOT</version>
+	<version>1.6-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>krasa-jaxb-tools</name>
@@ -130,7 +130,7 @@
 			<groupId>com.sun.xml.bind</groupId>
 			<artifactId>jaxb-impl</artifactId>
 			<version>${jaxb.version}</version>
-			<scope>test</scope>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jvnet.jaxb2.maven2</groupId>

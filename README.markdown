@@ -1,10 +1,19 @@
+>NOTE: I no longer use this plugin so I won't make any fixes, but if you make a pull request, I will merge it and release it.
+
+Contains:
+----------------
+* plugin for replacing primitives **-XReplacePrimitives** (e.g. int -> Integer)
+* plugin for generation of Bean Validation Annotations (JSR-303) **-XJsr303Annotations**
+
+---- 
+
 Actual Release:
 ----------------
 ```xml
 <dependency>
     <groupId>com.github.krasa</groupId>
     <artifactId>krasa-jaxb-tools</artifactId>
-    <version>1.1</version>
+    <version>1.5</version>
 </dependency>
 ```
 Snapshot:
@@ -13,7 +22,7 @@ Snapshot:
 <dependency>
     <groupId>com.github.krasa</groupId>
     <artifactId>krasa-jaxb-tools</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.3-SNAPSHOT</version>
 </dependency>
 
 <repository>
@@ -28,26 +37,23 @@ Snapshot:
 </repository>
 ```
 
-Contains:
-----------------
-* plugin for replacing primitives **-XReplacePrimitives**
-* plugin for generation of Bean Validation Annotations (JSR-303) **-XJsr303Annotations**
-
 ---- 
-
 XJsr303Annotations
 ----------------
 Generates:
 * @Valid annotation for all complex types, can be further restricted to generate only for types from defined schema: -XJsr303Annotations:targetNamespace=http://www.foo.com/bar
 * @NotNull annotation for objects that has a MinOccur value >= 1 or for attributes with required use
 * @Size for lists that have minOccurs > 1
-* @Size if there is a maxLength or minLength restriction
+* @Size if there is a maxLength or minLength or length restriction
 * @DecimalMax for maxInclusive restriction
 * @DecimalMin for minInclusive restriction
 * @DecimalMax for maxExclusive restriction, enable new parameter (inclusive=false) with: -XJsr303Annotations:JSR_349=true
 * @DecimalMin for minExclusive restriction, enable new parameter (inclusive=false) with: -XJsr303Annotations:JSR_349=true
 * @Digits if there is a totalDigits or fractionDigits restriction.
 * @Pattern if there is a Pattern restriction
+
+
+----------------
 
 @NotNull's default validation message is not always helpful, so it can be customized with **-XJsr303Annotations:notNullAnnotationsCustomMessages=OPTION** where **OPTION** is one of the following:
 * `false` (default: no custom message -- not useful)
@@ -56,12 +62,11 @@ Generates:
 * `ClassName` (class and field name are prefixed to the default message: **"Class.field {javax....message}"**)
 * `other-non-empty-text` (arbitrary message, with substitutable, case-sensitive parameters `{ClassName}` and `{FieldName}`: **"Class {ClassName} field {FieldName} non-null"**)
 
+---- 
 XReplacePrimitives
 ----------------
-replaces following types of fields, setters and getters:
-* int to Integer
-* long to Long
-* boolean to Boolean
+* replaces primitive types by Objects
+* WARNING: must be defined before XhashCode or Xequals
 
 ---- 
 Example project:

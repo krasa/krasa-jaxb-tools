@@ -113,4 +113,8 @@ public class Utils {
 	protected static boolean isNumber(Class<?> aClass) {
 		return Number.class.isAssignableFrom(aClass);
 	}
+
+	static boolean isCustomType(JFieldVar var) {
+        return "JDirectClass".equals(var.type().getClass().getSimpleName());
+    }
 }

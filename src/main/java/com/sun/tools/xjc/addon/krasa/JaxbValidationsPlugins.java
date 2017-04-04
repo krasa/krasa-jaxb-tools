@@ -18,7 +18,6 @@ import javax.validation.constraints.Size;
 
 import org.xml.sax.ErrorHandler;
 
-import com.sun.codemodel.JAnnotationArrayMember;
 import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JFieldVar;
 import com.sun.tools.xjc.BadCommandLineException;
@@ -103,7 +102,7 @@ public class JaxbValidationsPlugins extends Plugin {
 					notNullCustomMessages = notNullPrefixFieldName = notNullPrefixClassName = true;
 				} else if (value.equalsIgnoreCase("fieldname")) {
 					notNullCustomMessages = notNullPrefixFieldName = true;
-				} else if (!value.isEmpty() && !value.equalsIgnoreCase("false")) {
+				} else if (value.length() != 0 && !value.equalsIgnoreCase("false")) {
 					notNullCustomMessage = value;
 				}
 			}
@@ -174,11 +173,12 @@ public class JaxbValidationsPlugins extends Plugin {
 		// must be reflection because of cxf-codegen
 		int maxOccurs = toInt(Utils.getField("maxOccurs", particle));
 		int minOccurs = toInt(Utils.getField("minOccurs", particle));
+		boolean nillable = toBoolean(Utils.getField("nillable",particle.getTerm())); 
 		JFieldVar field = classOutline.implClass.fields().get(propertyName(property));
 
 		// workaround for choices
 		boolean required = property.isRequired();
-		if (minOccurs < 0 || minOccurs >= 1 && required) {
+		if (minOccurs < 0 || minOccurs >= 1 && required && !nillable) {
 			if (!hasAnnotation(field, NotNull.class)) {
 				processNotNull(classOutline, field);
 			}
@@ -187,6 +187,7 @@ public class JaxbValidationsPlugins extends Plugin {
 			if (!hasAnnotation(field, Size.class)) {
 				log("@Size (" + minOccurs + "," + maxOccurs + ") " + propertyName(property)
 						+ " added to class " + classOutline.implClass.name());
+
 				field.annotate(Size.class).param("min", minOccurs).param("max", maxOccurs);
 			}
 		}
@@ -206,6 +207,13 @@ public class JaxbValidationsPlugins extends Plugin {
 			processElement(property, classOutline, field, (ElementDecl) xsElementDecl);
 		}
 
+	}
+
+	private boolean toBoolean(Object field) {
+		if(field != null){
+			return Boolean.parseBoolean(field.toString()); 
+		}
+		return false;
 	}
 
 	private void processElement(CElementPropertyInfo property, ClassOutline clase, JFieldVar var, ElementDecl element) {
@@ -240,7 +248,8 @@ public class JaxbValidationsPlugins extends Plugin {
 
 	private void validAnnotation(final XSType elementType, JFieldVar var, final String propertyName,
 								 final String className) {
-		if ((targetNamespace == null || elementType.getTargetNamespace().startsWith(targetNamespace)) && elementType.isComplexType()) {
+		if ((targetNamespace == null || elementType.getTargetNamespace().startsWith(targetNamespace)) &&
+                (elementType.isComplexType() || Utils.isCustomType(var))) {
 			if (!hasAnnotation(var, Valid.class)) {
 				log("@Valid: " + propertyName + " added to class " + className);
 				var.annotate(Valid.class);
@@ -248,12 +257,15 @@ public class JaxbValidationsPlugins extends Plugin {
 		}
 	}
 
-	public void processType(XSSimpleType simpleType, JFieldVar field, String propertyName, String className) {
+    public void processType(XSSimpleType simpleType, JFieldVar field, String propertyName, String className) {
 		if (!hasAnnotation(field, Size.class) && isSizeAnnotationApplicable(field)) {
 			Integer maxLength = simpleType.getFacet("maxLength") == null ? null : Utils.parseInt(simpleType.getFacet(
 					"maxLength").getValue().value);
 			Integer minLength = simpleType.getFacet("minLength") == null ? null : Utils.parseInt(simpleType.getFacet(
 					"minLength").getValue().value);
+			Integer length = simpleType.getFacet("length") == null ? null : Utils.parseInt(simpleType.getFacet(
+					"length").getValue().value);
+
 			if (maxLength != null && minLength != null) {
 				log("@Size(" + minLength + "," + maxLength + "): " + propertyName + " added to class "
 						+ className);
@@ -264,6 +276,10 @@ public class JaxbValidationsPlugins extends Plugin {
 			} else if (maxLength != null) {
 				log("@Size(null, " + maxLength + "): " + propertyName + " added to class " + className);
 				field.annotate(Size.class).param("max", maxLength);
+			} else if (length != null) {
+				log("@Size(" + length + "," + length + "): " + propertyName + " added to class "
+						+ className);
+				field.annotate(Size.class).param("min", length).param("max", length);
 			}
 		}
 		if (jpaAnnotations && isSizeAnnotationApplicable(field)) {
@@ -328,7 +344,7 @@ public class JaxbValidationsPlugins extends Plugin {
 			if (!hasAnnotation(field, Digits.class)) {
 				log("@Digits(" + totalDigits + "," + fractionDigits + "): " + propertyName
 						+ " added to class " + className);
-				JAnnotationUse annox = field.annotate(Digits.class).param("integer", (totalDigits - fractionDigits));
+				JAnnotationUse annox = field.annotate(Digits.class).param("integer", totalDigits);
 				annox.param("fraction", fractionDigits);
 			}
 			if (jpaAnnotations) {
@@ -342,18 +358,18 @@ public class JaxbValidationsPlugins extends Plugin {
 		 */
 		List<XSFacet> patternList = simpleType.getFacets("pattern");
 		if (patternList.size() > 1) { // More than one pattern
-			log("@Pattern.List: " + propertyName + " added to class " + className);
-			JAnnotationUse patternListAnnotation = field.annotate(Pattern.List.class);
-			JAnnotationArrayMember listValue = patternListAnnotation.paramArray("value");
-
 			if ("String".equals(field.type().name())) {
+				log("@Pattern: " + propertyName + " added to class " + className);
+				final JAnnotationUse patternAnnotation = field.annotate(Pattern.class);
+				StringBuilder sb = new StringBuilder();
 				for (XSFacet xsFacet : patternList) {
 					final String value = xsFacet.getValue().value;
 					// cxf-codegen fix
 					if (!"\\c+".equals(value)) {
-						listValue.annotate(Pattern.class).param("regexp", replaceXmlProprietals(value));
+						sb.append("(").append(replaceXmlProprietals(value)).append(")|");
 					}
 				}
+				patternAnnotation.param("regexp", sb.substring(0, sb.length()-1));
 			}
 		} else if (simpleType.getFacet("pattern") != null) {
 			String pattern = simpleType.getFacet("pattern").getValue().value;
@@ -369,16 +385,17 @@ public class JaxbValidationsPlugins extends Plugin {
 		} else if ("String".equals(field.type().name())) {
 			final List<XSFacet> enumerationList = simpleType.getFacets("enumeration");
 			if (enumerationList.size() > 1) { // More than one pattern
-				log("@Pattern.List: " + propertyName + " added to class " + className);
-				final JAnnotationUse patternListAnnotation = field.annotate(Pattern.List.class);
-				final JAnnotationArrayMember listValue = patternListAnnotation.paramArray("value");
+				log("@Pattern: " + propertyName + " added to class " + className);
+				final JAnnotationUse patternListAnnotation = field.annotate(Pattern.class);
+				StringBuilder sb = new StringBuilder();
 				for (XSFacet xsFacet : enumerationList) {
 					final String value = xsFacet.getValue().value;
 					// cxf-codegen fix
 					if (!"\\c+".equals(value)) {
-						listValue.annotate(Pattern.class).param("regexp", replaceXmlProprietals(value));
+						sb.append("(").append(replaceXmlProprietals(value)).append(")|");
 					}
 				}
+				patternListAnnotation.param("regexp", sb.substring(0, sb.length()-1));
 			} else if (simpleType.getFacet("enumeration") != null) {
 				final String pattern = simpleType.getFacet("enumeration").getValue().value;
 				// cxf-codegen fix
