@@ -43,6 +43,15 @@ public class PrimitiveFixerPlugin extends Plugin {
             for (Map.Entry<String, JFieldVar> stringJFieldVarEntry : fields.entrySet()) {
                 JFieldVar fieldVar = stringJFieldVarEntry.getValue();
                 JType type = fieldVar.type();
+                
+                /*
+                 * Exclude "serialVersionUID" from processing XReplacePrimitives as this will 
+                 * have no getter or setter defined.
+                 */
+                if ("serialVersionUID".equals(fieldVar.name())) {
+                	continue;
+                }
+                    
                 if (type.isPrimitive()) {
                     Class o = hashMap.get(type.name());
                     if (o != null) {
