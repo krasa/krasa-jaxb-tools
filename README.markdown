@@ -64,7 +64,7 @@ Generates:
 
 ----------------
 
-Bean validation policy can be customized with **-XJsr303Annotations:generateValidationAnnotations=OPTION** where **OPTION** is one of the following:
+Bean validation policy can be customized with **-XJsr303Annotations:generateServiceValidationAnnotations=OPTION** where **OPTION** is one of the following:
 * `InOut` (default: validate requests and responses)
 * `In` (validate only requests)
 * `Out` (validate only responses)
@@ -109,10 +109,10 @@ Usage:
                             <extraarg>-xjc-XJsr303Annotations:notNullAnnotationsCustomMessages=false</extraarg>
                             <extraarg>-xjc-XJsr303Annotations:JSR_349=false</extraarg>
                             <extraarg>-xjc-XJsr303Annotations:verbose=false</extraarg>
-                            <!--optional Only needed for generateValidationAnnotations, which possible values are InOut (default), In, Out -->
+                            <!--optional, only needed for generateServiceValidationAnnotations, which possible values are InOut (default), In, Out -->
                             <extraarg>-fe</extraarg>
                             <extraarg>krasa</extraarg>
-                            <extraarg>-xjc-XJsr303Annotations:generateValidationAnnotations=In</extraarg>
+                            <extraarg>-xjc-XJsr303Annotations:generateServiceValidationAnnotations=In</extraarg>
                         </extraargs>
                     </wsdlOption>
                 </wsdlOptions>

@@ -67,7 +67,7 @@ public class ValidSEIGenerator extends SEIGenerator {
 			String[] xjcArgs = (String[]) penv.get(ToolConstants.CFG_XJC_ARGS);
 			for (String arg : xjcArgs) {
 				String[] parts = arg.split("=");
-				if (parts[0].contains(JaxbValidationsPlugins.GENERATE_VALIDATION_ANNOTATIONS)) {
+				if (parts[0].contains(JaxbValidationsPlugins.GENERATE_SERVICE_VALIDATION_ANNOTATIONS)) {
 					parseValidationPolicy(parts[1]);
 				}
 				LOG.log(Level.FINE, "xjc arg:" + arg);
