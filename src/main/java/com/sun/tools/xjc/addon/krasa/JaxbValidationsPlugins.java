@@ -1,23 +1,6 @@
 package com.sun.tools.xjc.addon.krasa;
 
-import static com.sun.tools.xjc.addon.krasa.Utils.toInt;
-
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.Collections;
-import java.util.List;
-
-import javax.persistence.Column;
-import javax.validation.Valid;
-import javax.validation.constraints.DecimalMax;
-import javax.validation.constraints.DecimalMin;
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
-
-import org.xml.sax.ErrorHandler;
-
+import com.sun.codemodel.JAnnotationArrayMember;
 import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JFieldVar;
 import com.sun.tools.xjc.BadCommandLineException;
@@ -30,17 +13,23 @@ import com.sun.tools.xjc.model.CValuePropertyInfo;
 import com.sun.tools.xjc.outline.ClassOutline;
 import com.sun.tools.xjc.outline.FieldOutline;
 import com.sun.tools.xjc.outline.Outline;
-import com.sun.xml.xsom.XSComponent;
-import com.sun.xml.xsom.XSElementDecl;
-import com.sun.xml.xsom.XSFacet;
-import com.sun.xml.xsom.XSSimpleType;
-import com.sun.xml.xsom.XSTerm;
-import com.sun.xml.xsom.XSType;
+import com.sun.xml.xsom.*;
 import com.sun.xml.xsom.impl.AttributeUseImpl;
 import com.sun.xml.xsom.impl.ElementDecl;
 import com.sun.xml.xsom.impl.ParticleImpl;
 import com.sun.xml.xsom.impl.RestrictionSimpleTypeImpl;
 import com.sun.xml.xsom.impl.parser.DelayedRef;
+import org.xml.sax.ErrorHandler;
+
+import javax.persistence.Column;
+import javax.validation.Valid;
+import javax.validation.constraints.*;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.Collections;
+import java.util.List;
+
+import static com.sun.tools.xjc.addon.krasa.Utils.toInt;
 
 /**
  * big thanks to original author: cocorossello
@@ -368,26 +357,48 @@ public class JaxbValidationsPlugins extends Plugin {
 		List<XSFacet> patternList = simpleType.getFacets("pattern");
 		if (patternList.size() > 1) { // More than one pattern
 			if ("String".equals(field.type().name())) {
-				log("@Pattern: " + propertyName + " added to class " + className);
-				final JAnnotationUse patternAnnotation = field.annotate(Pattern.class);
-				StringBuilder sb = new StringBuilder();
-				for (XSFacet xsFacet : patternList) {
-					final String value = xsFacet.getValue().value;
-					// cxf-codegen fix
-					if (!"\\c+".equals(value)) {
-						sb.append("(").append(replaceXmlProprietals(value)).append(")|");
-					}
+				if (simpleType.getBaseType() instanceof XSSimpleType && ((XSSimpleType) simpleType.getBaseType())
+						.getFacet("pattern") != null) {
+					log("@Pattern.List: " + propertyName + " added to class " + className);
+					JAnnotationUse patternListAnnotation = field.annotate(Pattern.List.class);
+					JAnnotationArrayMember listValue = patternListAnnotation.paramArray("value");
+
+					String basePattern = ((XSSimpleType) simpleType.getBaseType()).getFacet("pattern").getValue().value;
+					listValue.annotate(Pattern.class).param("regexp", replaceXmlProprietals(basePattern));
+
+					log("@Pattern: " + propertyName + " added to class " + className);
+					final JAnnotationUse patternAnnotation = listValue.annotate(Pattern.class);
+					annotateMultiplePattern(patternList, patternAnnotation);
+				} else {
+					log("@Pattern: " + propertyName + " added to class " + className);
+					final JAnnotationUse patternAnnotation = field.annotate(Pattern.class);
+					annotateMultiplePattern(patternList, patternAnnotation);
 				}
-				patternAnnotation.param("regexp", sb.substring(0, sb.length()-1));
 			}
 		} else if (simpleType.getFacet("pattern") != null) {
 			String pattern = simpleType.getFacet("pattern").getValue().value;
 			if ("String".equals(field.type().name())) {
-				// cxf-codegen fix
-				if (!"\\c+".equals(pattern)) {
-					log("@Pattern(" + pattern + "): " + propertyName + " added to class " + className);
-					if (!hasAnnotation(field, Pattern.class)) {
-						field.annotate(Pattern.class).param("regexp", replaceXmlProprietals(pattern));
+				if (simpleType.getBaseType() instanceof XSSimpleType && ((XSSimpleType) simpleType.getBaseType())
+						.getFacet("pattern") != null) {
+					log("@Pattern.List: " + propertyName + " added to class " + className);
+					JAnnotationUse patternListAnnotation = field.annotate(Pattern.List.class);
+					JAnnotationArrayMember listValue = patternListAnnotation.paramArray("value");
+					String basePattern = ((XSSimpleType) simpleType.getBaseType()).getFacet("pattern").getValue().value;
+					listValue.annotate(Pattern.class).param("regexp", replaceXmlProprietals(basePattern));
+					// cxf-codegen fix
+					if (!"\\c+".equals(pattern)) {
+						log("@Pattern(" + pattern + "): " + propertyName + " added to class " + className);
+						if (!hasAnnotation(field, Pattern.class)) {
+							listValue.annotate(Pattern.class).param("regexp", replaceXmlProprietals(pattern));
+						}
+					}
+				} else {
+					// cxf-codegen fix
+					if (!"\\c+".equals(pattern)) {
+						log("@Pattern(" + pattern + "): " + propertyName + " added to class " + className);
+						if (!hasAnnotation(field, Pattern.class)) {
+							field.annotate(Pattern.class).param("regexp", replaceXmlProprietals(pattern));
+						}
 					}
 				}
 			}
@@ -396,15 +407,7 @@ public class JaxbValidationsPlugins extends Plugin {
 			if (enumerationList.size() > 1) { // More than one pattern
 				log("@Pattern: " + propertyName + " added to class " + className);
 				final JAnnotationUse patternListAnnotation = field.annotate(Pattern.class);
-				StringBuilder sb = new StringBuilder();
-				for (XSFacet xsFacet : enumerationList) {
-					final String value = xsFacet.getValue().value;
-					// cxf-codegen fix
-					if (!"\\c+".equals(value)) {
-						sb.append("(").append(replaceXmlProprietals(value)).append(")|");
-					}
-				}
-				patternListAnnotation.param("regexp", sb.substring(0, sb.length()-1));
+				annotateMultiplePattern(enumerationList, patternListAnnotation);
 			} else if (simpleType.getFacet("enumeration") != null) {
 				final String pattern = simpleType.getFacet("enumeration").getValue().value;
 				// cxf-codegen fix
@@ -415,6 +418,18 @@ public class JaxbValidationsPlugins extends Plugin {
 			}
 		}
 	}
+
+    private void annotateMultiplePattern(final List<XSFacet> patternList, final JAnnotationUse patternAnnotation) {
+        StringBuilder sb = new StringBuilder();
+        for (XSFacet xsFacet : patternList) {
+            final String value = xsFacet.getValue().value;
+            // cxf-codegen fix
+            if (!"\\c+".equals(value)) {
+                sb.append("(").append(replaceXmlProprietals(value)).append(")|");
+            }
+        }
+        patternAnnotation.param("regexp", sb.substring(0, sb.length() - 1));
+    }
 
 	private String replaceXmlProprietals(String pattern) {
 		return pattern.replace("\\i", "[_:A-Za-z]").replace("\\c", "[-._:A-Za-z0-9]");
