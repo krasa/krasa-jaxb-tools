@@ -1,3 +1,5 @@
+[![Maven Central](https://img.shields.io/maven-central/v/com.github.krasa/krasa-jaxb-tools.svg)](https://github.com/krasa/krasa-jaxb-tools)
+
 >NOTE: I no longer use this plugin so I won't make any fixes, but if you make a pull request, I will merge it and release it.
 
 Contains:
