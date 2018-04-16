@@ -167,6 +167,11 @@ public class JaxbValidationsPlugins extends Plugin {
 	 */
 	public void processElement(CElementPropertyInfo property, ClassOutline classOutline, Outline model) {
 		XSComponent schemaComponent = property.getSchemaComponent();
+		if (!(schemaComponent instanceof ParticleImpl)) {
+			log(String.format("Skipping class %s as it seem to have an incompatible property schema: %s",
+					classOutline.implClass.name(), schemaComponent.getClass().getName()));
+			return;
+		}
 		ParticleImpl particle = (ParticleImpl) schemaComponent;
 		// must be reflection because of cxf-codegen
 		int maxOccurs = toInt(Utils.getField("maxOccurs", particle));
