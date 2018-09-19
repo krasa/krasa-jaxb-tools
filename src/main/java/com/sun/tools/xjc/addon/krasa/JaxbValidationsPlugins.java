@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
 
 import static com.sun.tools.xjc.addon.krasa.Utils.toInt;
 
@@ -413,7 +414,7 @@ public class JaxbValidationsPlugins extends Plugin {
 				// cxf-codegen fix
 				if (!"\\c+".equals(pattern)) {
 					log("@Pattern(" + pattern + "): " + propertyName + " added to class " + className);
-					field.annotate(Pattern.class).param("regexp", replaceXmlProprietals(pattern));
+					field.annotate(Pattern.class).param("regexp", escapeRegex(replaceXmlProprietals(pattern)));
 				}
 			}
 		}
@@ -425,7 +426,7 @@ public class JaxbValidationsPlugins extends Plugin {
             final String value = xsFacet.getValue().value;
             // cxf-codegen fix
             if (!"\\c+".equals(value)) {
-                sb.append("(").append(replaceXmlProprietals(value)).append(")|");
+                sb.append("(").append(escapeRegex(replaceXmlProprietals(value))).append(")|");
             }
         }
         patternAnnotation.param("regexp", sb.substring(0, sb.length() - 1));
@@ -433,6 +434,13 @@ public class JaxbValidationsPlugins extends Plugin {
 
 	private String replaceXmlProprietals(String pattern) {
 		return pattern.replace("\\i", "[_:A-Za-z]").replace("\\c", "[-._:A-Za-z0-9]");
+	}
+
+	/*
+	 * \Q indicates begin of quoted regex text, \E indicates end of quoted regex text
+	 */
+	private String escapeRegex(String pattern) {
+		return java.util.regex.Pattern.quote(pattern);
 	}
 
 	private boolean isSizeAnnotationApplicable(JFieldVar field) {
