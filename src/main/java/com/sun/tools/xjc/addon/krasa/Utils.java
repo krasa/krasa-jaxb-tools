@@ -38,7 +38,7 @@ public class Utils {
 					return field;
 				}
 				tmpClass = tmpClass.getSuperclass();
-			} while (clazz != null);
+			} while (tmpClass != null);
 		} catch (Exception e) {
 			System.err.println("krasa-jaxb-tools - Field '" + fieldName + "' not found on class " + clazz);
 		}
