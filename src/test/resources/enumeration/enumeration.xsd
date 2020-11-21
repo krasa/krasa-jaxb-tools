@@ -29,6 +29,7 @@
                             <xsd:enumeration value="04"/>
                             <xsd:enumeration value="08"/>
                             <xsd:enumeration value="12"/>
+                            <xsd:enumeration value="19 (with parentheses)"/>
                         </xsd:restriction>
                     </xsd:simpleType>
                 </xsd:element>
