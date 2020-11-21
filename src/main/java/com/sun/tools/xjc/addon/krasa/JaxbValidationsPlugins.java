@@ -17,7 +17,7 @@ import com.sun.xml.xsom.*;
 import com.sun.xml.xsom.impl.AttributeUseImpl;
 import com.sun.xml.xsom.impl.ElementDecl;
 import com.sun.xml.xsom.impl.ParticleImpl;
-import com.sun.xml.xsom.impl.RestrictionSimpleTypeImpl;
+import com.sun.xml.xsom.impl.SimpleTypeImpl;
 import com.sun.xml.xsom.impl.parser.DelayedRef;
 import org.xml.sax.ErrorHandler;
 
@@ -455,7 +455,7 @@ public class JaxbValidationsPlugins extends Plugin {
 
 		log("Attribute " + propertyName + " added to class " + className);
 		XSComponent definition = property.getSchemaComponent();
-		RestrictionSimpleTypeImpl particle = (RestrictionSimpleTypeImpl) definition;
+		SimpleTypeImpl particle = (SimpleTypeImpl) definition;
 		XSSimpleType type = particle.asSimpleType();
 		JFieldVar var = clase.implClass.fields().get(propertyName);
 
