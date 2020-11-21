@@ -408,7 +408,7 @@ public class JaxbValidationsPlugins extends Plugin {
 			if (enumerationList.size() > 1) { // More than one pattern
 				log("@Pattern: " + propertyName + " added to class " + className);
 				final JAnnotationUse patternListAnnotation = field.annotate(Pattern.class);
-				annotateMultiplePattern(enumerationList, patternListAnnotation);
+				annotateMultipleEnumerationPattern(enumerationList, patternListAnnotation);
 			} else if (simpleType.getFacet("enumeration") != null) {
 				final String pattern = simpleType.getFacet("enumeration").getValue().value;
 				// cxf-codegen fix
@@ -420,17 +420,30 @@ public class JaxbValidationsPlugins extends Plugin {
 		}
 	}
 
-    private void annotateMultiplePattern(final List<XSFacet> patternList, final JAnnotationUse patternAnnotation) {
-        StringBuilder sb = new StringBuilder();
-        for (XSFacet xsFacet : patternList) {
-            final String value = xsFacet.getValue().value;
-            // cxf-codegen fix
-            if (!"\\c+".equals(value)) {
-                sb.append("(").append(escapeRegex(replaceXmlProprietals(value))).append(")|");
-            }
-        }
-        patternAnnotation.param("regexp", sb.substring(0, sb.length() - 1));
-    }
+	private void annotateMultiplePattern(final List<XSFacet> patternList, final JAnnotationUse patternAnnotation) {
+		StringBuilder sb = new StringBuilder();
+		for (XSFacet xsFacet : patternList) {
+			final String value = xsFacet.getValue().value;
+			// cxf-codegen fix
+			if (!"\\c+".equals(value)) {
+				sb.append("(").append(replaceXmlProprietals(value)).append(")|");
+			}
+		}
+		patternAnnotation.param("regexp", sb.substring(0, sb.length() - 1));
+	}
+
+	private void annotateMultipleEnumerationPattern(final List<XSFacet> patternList,
+													final JAnnotationUse patternAnnotation) {
+		StringBuilder sb = new StringBuilder();
+		for (XSFacet xsFacet : patternList) {
+			final String value = xsFacet.getValue().value;
+			// cxf-codegen fix
+			if (!"\\c+".equals(value)) {
+				sb.append("(").append(escapeRegex(replaceXmlProprietals(value))).append(")|");
+			}
+		}
+		patternAnnotation.param("regexp", sb.substring(0, sb.length() - 1));
+	}
 
 	private String replaceXmlProprietals(String pattern) {
 		return pattern.replace("\\i", "[_:A-Za-z]").replace("\\c", "[-._:A-Za-z0-9]");
