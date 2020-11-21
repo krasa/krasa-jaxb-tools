@@ -81,7 +81,7 @@ XReplacePrimitives
 * WARNING: must be defined before XhashCode or Xequals
 
 ---- 
-Example project:
+Example project with tests:
 ----------------
 https://github.com/krasa/krasa-jaxb-tools-example
 
