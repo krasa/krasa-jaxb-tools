@@ -1,6 +1,6 @@
-[![Maven Central](https://img.shields.io/maven-central/v/com.github.krasa/krasa-jaxb-tools.svg)](https://github.com/krasa/krasa-jaxb-tools)
+[![Maven Central](https://img.shields.io/maven-central/v/com.github.krasa/krasa-jaxb-tools.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.krasa/krasa-jaxb-tools/)
 
->NOTE: I no longer use and maintain this plugin. Maven-central contains only old builds and will not be updated.
+>NOTE: I no longer use and maintain this plugin.
 
 
 Contains:
@@ -10,13 +10,13 @@ Contains:
 
 ---- 
 
-Very Old Release:
+Release:
 ----------------
 ```xml
 <dependency>
     <groupId>com.github.krasa</groupId>
     <artifactId>krasa-jaxb-tools</artifactId>
-    <version>1.5</version>
+    <version>1.8</version>
 </dependency>
 ```
 Very Old Snapshot:
