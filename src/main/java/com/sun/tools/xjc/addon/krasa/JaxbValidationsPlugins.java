@@ -289,6 +289,7 @@ public class JaxbValidationsPlugins extends Plugin {
 				field.annotate(Column.class).param("length", maxLength);
 			}
 		}
+		//TODO minExclusive=0, fractionDigits=2 wrong annotation https://github.com/krasa/krasa-jaxb-tools/issues/38 
 		XSFacet maxInclusive = simpleType.getFacet("maxInclusive");
 		if (maxInclusive != null && Utils.isNumber(field) && isValidValue(maxInclusive)
 				&& !hasAnnotation(field, DecimalMax.class)) {
