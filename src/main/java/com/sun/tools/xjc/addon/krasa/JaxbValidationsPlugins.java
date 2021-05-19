@@ -404,7 +404,7 @@ public class JaxbValidationsPlugins extends Plugin {
 					}
 				}
 			}
-		} else if ("String".equals(field.type().name())) {
+		} else if (field != null && "String".equals(field.type().name())) {
 			final List<XSFacet> enumerationList = simpleType.getFacets("enumeration");
 			if (enumerationList.size() > 1) { // More than one pattern
 				log("@Pattern: " + propertyName + " added to class " + className);
@@ -458,6 +458,9 @@ public class JaxbValidationsPlugins extends Plugin {
 	}
 
 	private boolean isSizeAnnotationApplicable(JFieldVar field) {
+		if(field == null) {
+			return false;
+		}
 		return field.type().name().equals("String")|| field.type().isArray() ;
 	}
 
