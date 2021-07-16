@@ -88,7 +88,7 @@ https://github.com/krasa/krasa-jaxb-tools-example
 ---- 
 Usage:
 ----------------
-```java
+```xml
 <plugin>
     <groupId>org.apache.cxf</groupId>
     <artifactId>cxf-codegen-plugin</artifactId>
@@ -136,7 +136,7 @@ Usage:
 </plugin>
 ```
 
-```java
+```xml
 <plugin>
     <groupId>org.jvnet.jaxb2.maven2</groupId>
     <artifactId>maven-jaxb2-plugin</artifactId>
@@ -177,7 +177,7 @@ Usage:
 </plugin>
 ```
 
-```java
+```xml
 <plugin>
     <groupId>org.apache.cxf</groupId>
     <artifactId>cxf-xjc-plugin</artifactId>
