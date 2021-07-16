@@ -59,7 +59,11 @@ public class Utils {
 				return simpleField.get(oo);
 			}
 		} catch (Exception e) {
-			System.err.println("krasa-jaxb-tools - Field " + path + " not found on " + oo.getClass().getName() );
+			String className = null;
+			if(oo != null && oo.getClass() != null) {
+				className = oo.getClass().getName();
+			}
+			System.err.println("krasa-jaxb-tools - Field " + path + " not found on " + className );
 		}
 		return null;
 	}
@@ -115,6 +119,9 @@ public class Utils {
 	}
 
 	static boolean isCustomType(JFieldVar var) {
-        return "JDirectClass".equals(var.type().getClass().getSimpleName());
-    }
+		if(var == null) {
+			return false;
+		}
+		return "JDirectClass".equals(var.type().getClass().getSimpleName());
+	}
 }
