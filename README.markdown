@@ -1,6 +1,6 @@
 [![Maven Central](https://img.shields.io/maven-central/v/com.github.krasa/krasa-jaxb-tools.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.krasa/krasa-jaxb-tools/)
 
->NOTE: I no longer use and maintain this plugin.
+>NOTE: I no longer use and maintain this plugin. Consider using this fork: https://github.com/fillumina/krasa-jaxb-tools
 
 
 Contains:
